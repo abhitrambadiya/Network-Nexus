@@ -15,6 +15,7 @@ mongoose.connect(MONGO_URI)
     .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
 // Alumni Schema with latitude and longitude as top-level fields
+// Updated Alumni Schema with all fields
 const alumniSchema = new mongoose.Schema({
     fullName: { type: String, required: true },
     email: { type: String, required: true, unique: true },
@@ -25,9 +26,14 @@ const alumniSchema = new mongoose.Schema({
     jobPosition: String,
     companyName: String,
     location: String,
-    latitude: Number,  // Separate latitude field
-    longitude: Number, // Separate longitude field
+    latitude: Number,
+    longitude: Number,
     successStory: String,
+    linkedInURL: String, // <-- Updated key
+    phoneNumber: String,
+    skills: String,
+    role: { type: String, default: "Alumni" }, // <-- Added default
+    specialAchievements: String,
     isVerified: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
@@ -143,6 +149,11 @@ const importAlumniFromCSV = async (filePath) => {
                         latitude: latitude,
                         longitude: longitude,
                         successStory: alumni.successStory,
+                        linkedInURL: alumni.linkedInURL, // <-- New field
+                        phoneNumber: alumni.phoneNumber, // <-- New field
+                        skills: alumni.skills,           // <-- New field
+                        role: alumni.role || "Alumni",   // <-- New field with fallback
+                        specialAchievements: alumni.specialAchievements // <-- New field
                     });
 
                     // Save to database
