@@ -1,21 +1,47 @@
-import React from 'react';
-import { Link } from "react-router-dom";
-
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from "react-router-dom";
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-
 import { GraduationCap, Users, Calendar, UserPlus, ClipboardList, LogOut } from 'lucide-react';
+import api from './api.js';
 
-// Mock user data - replace with actual user data from your authentication system
-const user = {
-  fullName: "Dr. Sarah Johnson",
-  email: "sarah.johnson@alumni.edu",
-  department: "Computer Science",
-  profilePic: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=128&h=128&q=80"
-};
+const avatarColors = ['646cff', 'f97316', '10b981', '3b82f6', 'ef4444', 'a855f7'];
 
 function App() {
+  const getAvatarUrl = (name) => {
+    const index = [...name].reduce((acc, char) => acc + char.charCodeAt(0), 0) % avatarColors.length;
+    const background = avatarColors[index];
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${background}&color=fff`;
+  };
+  
+  const [admin, setAdmin] = useState(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchAdminProfile = async () => {
+      try {
+        const response = await api.get('/profile');
+        setAdmin(response.data);
+      } catch (error) {
+        console.error('Failed to fetch admin profile:', error);
+        // Handle error (e.g., redirect to login)
+        navigate('/admin-login');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAdminProfile();
+  }, [navigate]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!admin) {
+    return <div>No admin data found</div>;
+  }
+
   const handleLogout = async () => {
     try {
         await axios.post('http://localhost:5001/api/admin/logout', {}, { withCredentials: true });
@@ -79,8 +105,8 @@ function App() {
                     <div className="absolute -inset-0.5 bg-indigo-600 rounded-2xl blur opacity-60 group-hover:opacity-80 transition duration-300"></div>
                     <div className="w-32 h-32 rounded-2xl bg-indigo-700 absolute -inset-1 transform rotate-2 group-hover:rotate-3 transition-all duration-300"></div>
                     <img
-                      src={user.profilePic}
-                      alt={user.fullName}
+                      src={getAvatarUrl(admin.name)}
+                      alt={admin.name}
                       className="relative w-32 h-32 rounded-2xl object-cover ring-4 ring-white shadow-md group-hover:shadow-lg transition-all duration-300"
                     />
                     <div className="absolute -bottom-3 -right-3 w-10 h-10 bg-indigo-600 rounded-xl shadow-lg flex items-center justify-center transform rotate-12 group-hover:scale-110 transition-transform duration-300">
@@ -89,11 +115,11 @@ function App() {
                   </div>
                 </div>
                 <div className="text-center md:text-left flex-1">
-                  <h2 className="text-3xl font-bold text-gray-900 tracking-tight mb-1">{user.fullName}</h2>
-                  <p className="text-indigo-600 text-lg mb-3">{user.email}</p>
+                  <h2 className="text-3xl font-bold text-gray-900 tracking-tight mb-1">{admin.name}</h2>
+                  <p className="text-indigo-600 text-lg mb-3">{admin.email}</p>
                   <div className="flex flex-wrap justify-center md:justify-start items-center gap-2 mb-8">
                     <span className="px-4 py-1.5 bg-gray-100 text-gray-900 rounded-full text-sm font-medium border border-gray-200 hover:bg-gray-200 transition-colors">
-                      Department of {user.department}
+                      Department of {admin.department}
                     </span>
                     <span className="px-4 py-1.5 bg-gray-100 text-gray-900 rounded-full text-sm font-medium border border-gray-200 hover:bg-gray-200 transition-colors">
                       Faculty Member
@@ -125,40 +151,9 @@ function App() {
         </div>
 
         {/* Dashboard Section - Updated with 5 different styled cards */}
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 py-8">
-            
-            {/* Mentorship Approval - With gradient background */}
-            <div className="bg-white rounded-lg p-6 shadow-lg hover:translate-y-1 transition-transform duration-200 relative">
-            <div className="absolute top-0 right-0 w-16 h-16 bg-indigo-600 rounded-bl-full opacity-10"></div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                  <Users size={20} />
-                  Mentorship Approval
-                </h3>
-                <p className="text-grey-600 mb-6">Review and approve mentorship applications from alumni and students.</p>
-                <Link to="/admin-Mentorship" className="text-white no-underline">
-                  <button className="bg-indigo-600 text-white py-2 px-4 rounded-md font-medium hover:bg-indigo-700 inline-flex items-center gap-2 transition-colors duration-200 w-full transform hover:scale-[1.02]">
-                    Manage Mentorships
-                  </button>
-                </Link>
-              
-            </div>
-            
-            {/* Internship Management - With border accent */}
-            <div className="bg-white rounded-lg p-6 shadow-lg hover:translate-y-1 transition-transform duration-200 relative">
-            <div className="absolute top-0 right-0 w-16 h-16 bg-indigo-600 rounded-bl-full opacity-10"></div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <ClipboardList size={20} className="text-indigo-700" />
-                Internship Management
-              </h3>
-              <p className="text-gray-600 mb-6">Oversee internship postings and applications from companies.</p>
-              <Link to="/admin-Internship" className="text-white no-underline">
-                <button className="bg-indigo-600 text-white py-2 px-4 rounded-md font-medium hover:bg-indigo-700 inline-flex items-center gap-2 transition-colors duration-200 w-full transform hover:scale-[1.02]">
-                  View Internships
-                </button>
-              </Link>
-            </div>
-            
+        <div className="max-w-5xl mx-auto px-10">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-10 py-10">
+
             {/* Department Directory - With shadow effect */}
             <div className="bg-white rounded-lg p-6 shadow-lg hover:translate-y-1 transition-transform duration-200 relative">
               {/* Decorative corner accent */}
@@ -190,17 +185,33 @@ function App() {
               </Link>
             </div>
             
-            {/* Event Management - With accent color */}
+            {/* Mentorship Approval - With gradient background */}
             <div className="bg-white rounded-lg p-6 shadow-lg hover:translate-y-1 transition-transform duration-200 relative">
             <div className="absolute top-0 right-0 w-16 h-16 bg-indigo-600 rounded-bl-full opacity-10"></div>
-              <h3 className="text-lg font-semibold text-indigo-900 mb-4 flex items-center gap-2">
-                <Calendar size={20} className="text-indigo-700" />
-                Event Management
+                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <Users size={20} />
+                  Mentorship Approval
+                </h3>
+                <p className="text-grey-600 mb-6">Review and approve mentorship applications from alumni and students.</p>
+                <Link to="/admin-Mentorship" className="text-white no-underline">
+                  <button className="bg-indigo-600 text-white py-2 px-4 rounded-md font-medium hover:bg-indigo-700 inline-flex items-center gap-2 transition-colors duration-200 w-full transform hover:scale-[1.02]">
+                    Manage Mentorships
+                  </button>
+                </Link>
+              
+            </div>
+            
+            {/* Internship Management - With border accent */}
+            <div className="bg-white rounded-lg p-6 shadow-lg hover:translate-y-1 transition-transform duration-200 relative">
+            <div className="absolute top-0 right-0 w-16 h-16 bg-indigo-600 rounded-bl-full opacity-10"></div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                <ClipboardList size={20} className="text-indigo-700" />
+                Internship Management
               </h3>
-              <p className="text-grey-600 mb-6">Create and manage alumni events and gatherings.</p>
-              <Link to="/admin-Event" className="text-white no-underline">
-                <button className="bg-indigo-700 text-white py-2 px-4 rounded-md font-medium hover:bg-indigo-800 inline-flex items-center gap-2 transition-colors duration-200 w-full transform hover:scale-[1.02]">
-                  Manage Events
+              <p className="text-gray-600 mb-6">Oversee internship postings and applications from companies.</p>
+              <Link to="/admin-Internship" className="text-white no-underline">
+                <button className="bg-indigo-600 text-white py-2 px-4 rounded-md font-medium hover:bg-indigo-700 inline-flex items-center gap-2 transition-colors duration-200 w-full transform hover:scale-[1.02]">
+                  View Internships
                 </button>
               </Link>
             </div>

@@ -146,3 +146,27 @@ export const resetPassword = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+// @desc    Get current admin profile
+// @route   GET /api/admin/profile
+// @access  Private
+export const getAdminProfile = async (req, res) => {
+  try {
+    // req.admin already has the user details from the protect middleware
+    const admin = req.admin;
+    
+    if (!admin) {
+      return res.status(404).json({ message: 'Admin not found' });
+    }
+
+    res.status(200).json({
+      _id: admin._id,
+      name: admin.name,
+      email: admin.email,
+      department: admin.department
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};

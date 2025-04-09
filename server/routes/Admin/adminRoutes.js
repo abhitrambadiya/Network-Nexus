@@ -4,7 +4,8 @@ import {
   loginAdmin, 
   forgotPassword, 
   verifyOTP, 
-  resetPassword 
+  resetPassword,
+  getAdminProfile
 } from '../../controllers/Admin/adminLoginController.js';
 import { protect } from '../../middleware/Admin/adminMiddleware.js';
 
@@ -14,6 +15,7 @@ const router = express.Router();
 router.post('/login', loginAdmin);
 router.post('/forgot-password', forgotPassword);
 router.post('/verify-otp', verifyOTP);
+router.get('/profile', protect, getAdminProfile);
 
 // Protected routes
 router.put('/reset-password', protect, resetPassword);

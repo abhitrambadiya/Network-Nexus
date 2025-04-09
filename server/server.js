@@ -14,6 +14,7 @@ import alumniMapRoutes from './routes/LandingPage/alumniMap.routes.js';
 
 // only and only Admin ke routes
 import adminRoutes from './routes/Admin/adminRoutes.js';
+import bulkUploadRoute from './routes/Admin/bulkUpload.js';
 
 // only and only Admin ke routes
 import alumniRoutes from './routes/Alumni/alumniRoutes.js';
@@ -47,6 +48,7 @@ app.use('/api/alumni-map', alumniMapRoutes);
 
 // only and only Admin ke routes
 app.use('/api/admin', adminRoutes);
+app.use('/api/admin', bulkUploadRoute);
 
 // only and only Admin ke routes
 app.use('/api/alumni', alumniRoutes);

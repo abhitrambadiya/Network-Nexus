@@ -28,7 +28,6 @@ const alumniSchema = new mongoose.Schema({
     latitude: Number,  // Separate latitude field
     longitude: Number, // Separate longitude field
     successStory: String,
-    mentorshipAreas: [String],
     isVerified: { type: Boolean, default: false },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
@@ -144,8 +143,6 @@ const importAlumniFromCSV = async (filePath) => {
                         latitude: latitude,
                         longitude: longitude,
                         successStory: alumni.successStory,
-                        mentorshipAreas: alumni.mentorshipArea ? 
-                            alumni.mentorshipArea.split(',').map(area => area.trim()) : []
                     });
 
                     // Save to database
