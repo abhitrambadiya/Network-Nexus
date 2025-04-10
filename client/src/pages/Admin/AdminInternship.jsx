@@ -154,7 +154,7 @@ function App() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 text-gray-800">
       <header className="bg-indigo-600 text-white py-6 mb-8 relative">
-        <button className="absolute left-8 top-1/2 transform -translate-y-1/2 bg-transparent border border-white text-white py-2 px-4 rounded-md cursor-pointer flex items-center gap-2 transition-all duration-200 hover:bg-white/10" onClick={() => window.location.href = '/'}>
+        <button className="absolute left-8 top-1/2 transform -translate-y-1/2 bg-transparent border border-white text-white py-2 px-4 rounded-md cursor-pointer flex items-center gap-2 transition-all duration-200 hover:bg-white/10" onClick={() => window.location.href = '/admin-home'}>
           <Home size={16} />
           Home
         </button>

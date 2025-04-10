@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link } from "react-router-dom";
 import { Home, Upload, FileText, Check, X, Loader2 } from 'lucide-react';
 import axios from 'axios';
+import LoadingScreen from "../../components/LoadingScreen";
 
 const AlumniManagement = () => {
   const [uploadStatus, setUploadStatus] = useState({ message: '', type: '' });
@@ -10,17 +11,20 @@ const AlumniManagement = () => {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
   const currentYear = new Date().getFullYear();
+  const [loading, setLoading] = useState(true);
   
   // Clear upload status after 5 seconds if it's an error
-  useEffect(() => {
-    if (uploadStatus.type === 'error') {
-      const timer = setTimeout(() => {
-        setUploadStatus({ message: '', type: '' });
-      }, 5000);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [uploadStatus]);
+    useEffect(() => {
+    // Simulate initial loading like other pages
+    const start = Date.now();
+
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, Math.max(0, 1000 - (Date.now() - start))); // Ensures at least 2s load time
+
+    return () => clearTimeout(timer);
+  }, []);
+
   
   // Drag and drop handlers
   const preventDefaults = (e) => {
@@ -173,6 +177,10 @@ const AlumniManagement = () => {
       setIsSubmitting(false);
     }
   };
+
+  if (loading) {
+    return <LoadingScreen message="Loading alumni management..." />;
+  }
   
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">

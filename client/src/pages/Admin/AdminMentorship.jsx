@@ -1,51 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Bell, MapPin, User, Briefcase, Home, Check, History, CheckCircle2 } from 'lucide-react';
+import LoadingScreen from "../../components/LoadingScreen";
 
-const initialPrograms = [
-  {
-    id: 1,
-    title: "Senior Developer Mentorship Program",
-    description: "One-on-one mentorship focusing on advanced React patterns and system design.",
-    location: "Remote / Virtual",
-    contact: "john.doe@example.com",
-    type: "Technical",
-    programType: "mentorship",
-    status: "pending"
-  },
-  {
-    id: 2,
-    title: "Career Growth Guidance",
-    description: "Weekly sessions on career development and leadership in tech.",
-    location: "New York, NY",
-    contact: "sarah.smith@example.com",
-    type: "Career",
-    programType: "mentorship",
-    status: "pending"
-  },
-  {
-    id: 3,
-    title: "Full-Stack Development Workshop",
-    description: "Intensive mentorship program covering modern full-stack development.",
-    location: "San Francisco, CA",
-    contact: "mike.wilson@example.com",
-    type: "Technical",
-    programType: "mentorship",
-    status: "pending"
-  },
-  {
-    id: 4,
-    title: "Frontend Development Internship",
-    description: "3-month internship focused on modern frontend technologies and best practices.",
-    location: "Seattle, WA",
-    contact: "emma.brown@example.com",
-    type: "Technical",
-    programType: "internship",
-    status: "pending"
-  }
-];
+// Set base URL for API requests
+const API_URL = 'http://localhost:5001/api';
 
 function ProgramCard({ program, isSelected, onClick, onApprove, onComplete }) {
   return (
@@ -68,13 +28,16 @@ function ProgramCard({ program, isSelected, onClick, onApprove, onComplete }) {
       <div className="pt-4 border-t border-gray-200 text-gray-500 text-sm mb-4">
         Contact: {program.contact}
       </div>
-      {isSelected && program.status === 'pending' && (
+      <div className="pt-0 text-gray-500 text-sm mb-4">
+        PRN: {program.prn}
+      </div>
+      {isSelected && !program.isApproved && !program.isMarkedAsComplete && (
         <div className="mt-4">
           <button 
             className="w-full flex items-center justify-center gap-2 py-3 bg-indigo-600 text-white rounded-md font-medium hover:bg-indigo-700 transition-colors duration-200"
             onClick={(e) => {
               e.stopPropagation();
-              onApprove(program.id);
+              onApprove(program._id);
             }}
           >
             <Check size={20} />
@@ -82,17 +45,22 @@ function ProgramCard({ program, isSelected, onClick, onApprove, onComplete }) {
           </button>
         </div>
       )}
-      {program.status === 'approved' && (
+      {program.isApproved && !program.isMarkedAsComplete && (
         <button 
           className="w-full flex items-center justify-center gap-2 py-3 bg-gray-100 text-gray-700 rounded-md font-medium hover:bg-gray-200 transition-colors duration-200 mt-4"
           onClick={(e) => {
             e.stopPropagation();
-            onComplete(program.id);
+            onComplete(program._id);
           }}
         >
           <CheckCircle2 size={20} />
           Mark as Completed
         </button>
+      )}
+      {program.isMarkedAsComplete && (
+        <div className="mt-4 text-center py-2 bg-green-100 text-green-700 rounded-md">
+          Completed
+        </div>
       )}
     </div>
   );
@@ -100,14 +68,16 @@ function ProgramCard({ program, isSelected, onClick, onApprove, onComplete }) {
 
 ProgramCard.propTypes = {
   program: PropTypes.shape({
-    id: PropTypes.number.isRequired,
+    _id: PropTypes.string.isRequired,
     title: PropTypes.string.isRequired,
     description: PropTypes.string.isRequired,
     location: PropTypes.string.isRequired,
     contact: PropTypes.string.isRequired,
     type: PropTypes.string.isRequired,
     programType: PropTypes.string.isRequired,
-    status: PropTypes.string.isRequired
+    prn: PropTypes.string.isRequired,
+    isApproved: PropTypes.bool.isRequired,
+    isMarkedAsComplete: PropTypes.bool.isRequired
   }).isRequired,
   isSelected: PropTypes.bool.isRequired,
   onClick: PropTypes.func.isRequired,
@@ -116,36 +86,96 @@ ProgramCard.propTypes = {
 };
 
 function App() {
-  const [programs, setPrograms] = useState(initialPrograms);
+  const [programs, setPrograms] = useState([]);
   const [activeTab, setActiveTab] = useState('pending');
   const [selectedProgram, setSelectedProgram] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const pendingPrograms = programs.filter(program => program.status === 'pending');
-  const approvedPrograms = programs.filter(program => program.status === 'approved');
+  useEffect(() => {
+    const fetchPrograms = async () => {
+      const start = Date.now();
+      setLoading(true);
+
+      try {
+        const response = await axios.get(`${API_URL}/programs`);
+        const elapsed = Date.now() - start;
+        const delay = Math.max(0, 1000 - elapsed);
+
+        setTimeout(() => {
+          setPrograms(response.data.data);
+          setLoading(false);
+        }, delay);
+      } catch (err) {
+        const elapsed = Date.now() - start;
+        const delay = Math.max(0, 1000 - elapsed);
+
+        setTimeout(() => {
+          setError('Failed to fetch programs');
+          setLoading(false);
+        }, delay);
+
+        console.error('Error fetching programs:', err);
+      }
+    };
+
+    fetchPrograms();
+  }, []);
+
+  const pendingPrograms = programs.filter(p => !p.isApproved && !p.isMarkedAsComplete);
+  const approvedPrograms = programs.filter(p => p.isApproved && !p.isMarkedAsComplete);
+  const completedPrograms = programs.filter(p => p.isMarkedAsComplete);
 
   const handleCardClick = (id) => {
     setSelectedProgram(selectedProgram === id ? null : id);
   };
 
-  const handleApprove = (id) => {
-    setPrograms(programs.map(program => 
-      program.id === id ? { ...program, status: 'approved' } : program
-    ));
-    setSelectedProgram(null);
+  const handleApprove = async (id) => {
+    try {
+      const response = await axios.put(`${API_URL}/programs/${id}/approve`);
+      setPrograms(programs.map(p => (p._id === id ? response.data.data : p)));
+      setSelectedProgram(null);
+    } catch (err) {
+      console.error('Error approving program:', err);
+      alert('Failed to approve program');
+    }
   };
 
-  const handleComplete = (id) => {
-    setPrograms(programs.map(program => 
-      program.id === id ? { ...program, status: 'completed' } : program
-    ));
+  const handleComplete = async (id) => {
+    try {
+      const response = await axios.put(`${API_URL}/programs/${id}/complete`);
+      setPrograms(programs.map(p => (p._id === id ? response.data.data : p)));
+      setSelectedProgram(null);
+    } catch (err) {
+      console.error('Error completing program:', err);
+      alert('Failed to mark program as complete');
+    }
   };
+
+  if (loading) return <LoadingScreen message="Loading mentorships..." />;
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center text-red-600">
+          <p className="text-xl font-medium">{error}</p>
+          <button 
+            className="mt-4 bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700"
+            onClick={() => window.location.reload()}
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 text-gray-800">
+    <div className="min-h-screen flex flex-col justify-between bg-gray-50 text-gray-800">
       <header className="bg-indigo-600 text-white py-6 mb-8 relative">
         <button 
           className="absolute left-8 top-1/2 transform -translate-y-1/2 bg-transparent border border-white text-white py-2 px-4 rounded-md flex items-center gap-2 hover:bg-white/10 transition-all duration-200"
-          onClick={() => window.location.href = '/'}
+          onClick={() => window.location.href = '/admin-home'}
         >
           <Home size={16} />
           Home
@@ -163,7 +193,7 @@ function App() {
             onClick={() => setActiveTab('pending')}
           >
             <Bell size={16} />
-            Pending Requests
+            Pending Requests ({pendingPrograms.length})
           </button>
           <button 
             className={`flex items-center gap-2 py-3 px-6 rounded-lg font-medium transition-all duration-200
@@ -173,7 +203,17 @@ function App() {
             onClick={() => setActiveTab('approved')}
           >
             <History size={16} />
-            Approved Requests
+            Approved Requests ({approvedPrograms.length})
+          </button>
+          <button 
+            className={`flex items-center gap-2 py-3 px-6 rounded-lg font-medium transition-all duration-200
+              ${activeTab === 'completed' 
+                ? 'text-indigo-600 bg-gray-100' 
+                : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-100'}`}
+            onClick={() => setActiveTab('completed')}
+          >
+            <CheckCircle2 size={16} />
+            Completed ({completedPrograms.length})
           </button>
         </div>
 
@@ -184,28 +224,50 @@ function App() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-          {(activeTab === 'pending' ? pendingPrograms : approvedPrograms).map(program => (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10 mb-10">
+          {activeTab === 'pending' && pendingPrograms.map(program => (
             <ProgramCard
-              key={program.id}
+              key={program._id}
               program={program}
-              isSelected={selectedProgram === program.id}
-              onClick={() => handleCardClick(program.id)}
+              isSelected={selectedProgram === program._id}
+              onClick={() => handleCardClick(program._id)}
+              onApprove={handleApprove}
+              onComplete={handleComplete}
+            />
+          ))}
+          {activeTab === 'approved' && approvedPrograms.map(program => (
+            <ProgramCard
+              key={program._id}
+              program={program}
+              isSelected={selectedProgram === program._id}
+              onClick={() => handleCardClick(program._id)}
+              onApprove={handleApprove}
+              onComplete={handleComplete}
+            />
+          ))}
+          {activeTab === 'completed' && completedPrograms.map(program => (
+            <ProgramCard
+              key={program._id}
+              program={program}
+              isSelected={selectedProgram === program._id}
+              onClick={() => handleCardClick(program._id)}
               onApprove={handleApprove}
               onComplete={handleComplete}
             />
           ))}
         </div>
 
-        {(activeTab === 'pending' ? pendingPrograms : approvedPrograms).length === 0 && (
+        {(activeTab === 'pending' && pendingPrograms.length === 0) || 
+         (activeTab === 'approved' && approvedPrograms.length === 0) ||
+         (activeTab === 'completed' && completedPrograms.length === 0) ? (
           <div className="text-center py-12 text-gray-500">
             <h2 className="text-xl font-medium text-gray-700 mb-4">No {activeTab} requests</h2>
             <p>There are currently no {activeTab} requests to display.</p>
           </div>
-        )}
+        ) : null}
       </div>
-      {/* Footer */}
-      <footer className="bg-gray-800 text-gray-200 py-12 mt-16">
+
+      <footer className="bg-gray-800 text-gray-200 py-12">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>

@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from 'axios';
 import { GraduationCap, Users, Calendar, UserPlus, ClipboardList, LogOut } from 'lucide-react';
 import api from './api.js';
-
+import LoadingScreen from "../../components/LoadingScreen";
 const avatarColors = ['646cff', 'f97316', '10b981', '3b82f6', 'ef4444', 'a855f7'];
 
 function App() {
@@ -12,22 +12,32 @@ function App() {
     const background = avatarColors[index];
     return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=${background}&color=fff`;
   };
-  
+
   const [admin, setAdmin] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchAdminProfile = async () => {
+      const start = Date.now();
       try {
         const response = await api.get('/profile');
-        setAdmin(response.data);
+        const elapsed = Date.now() - start;
+        const delay = Math.max(0, 1000 - elapsed);
+
+        setTimeout(() => {
+          setAdmin(response.data);
+          setLoading(false);
+        }, delay);
       } catch (error) {
-        console.error('Failed to fetch admin profile:', error);
-        // Handle error (e.g., redirect to login)
-        navigate('/admin-login');
-      } finally {
-        setLoading(false);
+        const elapsed = Date.now() - start;
+        const delay = Math.max(0, 1000 - elapsed);
+
+        setTimeout(() => {
+          console.error('Failed to fetch admin profile:', error);
+          navigate('/admin-login');
+          setLoading(false);
+        }, delay);
       }
     };
 
@@ -35,26 +45,27 @@ function App() {
   }, [navigate]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <LoadingScreen message="Loading admin profile..." />;
   }
 
   if (!admin) {
-    return <div>No admin data found</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-700 text-xl">
+        No admin data found
+      </div>
+    );
   }
 
   const handleLogout = async () => {
     try {
-        await axios.post('http://localhost:5001/api/admin/logout', {}, { withCredentials: true });
-
-        // Clear localStorage (if token is stored)
-        localStorage.removeItem('adminToken');
-
-        // Redirect to login
-        navigate('/admin-login');
+      await axios.post('http://localhost:5001/api/admin/logout', {}, { withCredentials: true });
+      localStorage.removeItem('adminToken');
+      navigate('/admin-login');
     } catch (error) {
-        console.error('Logout failed:', error);
+      console.error('Logout failed:', error);
     }
-}; 
+  };
+
   return (
     <div className="bg-gray-50 text-gray-800">
       {/* Header */}
@@ -162,7 +173,7 @@ function App() {
                 <Users size={20} className="text-indigo-700" />
                 Department Directory
               </h3>
-              <p className="text-gray-600 mb-6">Access and manage department-wise alumni listings.</p>
+              <p className="text-gray-600 mb-6">Access and manage department-wise alumni listings with sorting and search options.</p>
               <Link to="/admin-Directory" className="text-white no-underline">
                 <button className="bg-indigo-700 text-white py-2 px-4 rounded-md font-medium hover:bg-indigo-800 inline-flex items-center gap-2 transition-colors duration-200 w-full transform hover:scale-[1.02]">
                   Open Directory
@@ -177,7 +188,7 @@ function App() {
                 <UserPlus size={20} className="text-indigo-700" />
                 Alumni Management
               </h3>
-              <p className="text-gray-600 mb-6">Add single or bulk alumni entries to the database.</p>
+              <p className="text-gray-600 mb-6">Add single or bulk alumni entries to the database in just a single click.</p>
               <Link to="/admin-AddAlumni" className="text-white no-underline">
                 <button className="bg-indigo-700 text-white py-2 px-4 rounded-md font-medium hover:bg-indigo-800 inline-flex items-center gap-2 transition-colors duration-200 w-full transform hover:scale-[1.02]">
                   Add Alumni

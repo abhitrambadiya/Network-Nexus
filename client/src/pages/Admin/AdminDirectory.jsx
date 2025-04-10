@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Search, X, Home } from 'lucide-react';
 import { Link } from "react-router-dom";
 import axios from 'axios';
+import LoadingScreen from "../../components/LoadingScreen";
 
 function App() {
   const [alumniList, setAlumniList] = useState([]);
@@ -11,48 +12,39 @@ function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // ✅ DiceBear avatar helper
   const getAvatarUrl = (name) => {
     return `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(name)}&radius=50`;
   };
 
-  // ✅ Helper function to process skills (converts string to array)
   const processSkills = (skillsData) => {
-    // If it's already an array, return it
     if (Array.isArray(skillsData)) return skillsData;
-    // If it's a string, split by commas
     if (typeof skillsData === 'string') return skillsData.split(',').map(skill => skill.trim()).filter(skill => skill);
-    // Default to empty array
     return [];
   };
 
-  // ✅ Similar helper for achievements
   const processAchievements = (achievementsData) => {
     if (Array.isArray(achievementsData)) return achievementsData;
     if (typeof achievementsData === 'string') return achievementsData.split(',').map(item => item.trim()).filter(item => item);
     return [];
   };
 
-  // ✅ Fetch alumni data on mount with cleanup
   useEffect(() => {
     const controller = new AbortController();
     const signal = controller.signal;
 
     const fetchData = async () => {
+      const start = Date.now();
       setIsLoading(true);
       try {
-        // Use environment variable or fallback for API URL
         const apiUrl = 'http://localhost:5001';
         const res = await axios.get(`${apiUrl}/api/admin/admin-directory`, { signal });
         
-        // Add avatar URLs to each alumni and ensure all array properties are initialized
         const alumniWithAvatars = res.data.map((alumni, index) => ({
           ...alumni,
-          id: alumni.id || `alumni-${index}`, // Ensure ID exists for key props
+          id: alumni.id || `alumni-${index}`,
           avatar: getAvatarUrl(alumni.fullName || `User${index}`),
           currentPosition: alumni.jobPosition || "Not specified",
           company: alumni.companyName || "Not specified",
-          // Process string-based or array-based skills and achievements consistently
           skills: processSkills(alumni.skills),
           achievements: processAchievements(alumni.specialAchievements),
           linkedinUrl: alumni.linkedInURL || "#",
@@ -66,38 +58,43 @@ function App() {
           setError("Failed to load alumni data. Please try again later.");
         }
       } finally {
-        setIsLoading(false);
+        const elapsed = Date.now() - start;
+        const remaining = 1000 - elapsed;
+
+        setTimeout(() => {
+          setIsLoading(false);
+        }, remaining > 0 ? remaining : 0);
       }
     };
 
     fetchData();
 
-    // Cleanup function to cancel any in-flight requests when component unmounts
     return () => {
       controller.abort();
     };
   }, []);
 
-  // ✅ Filter and sort logic
-const filteredAlumni = alumniList
-.filter(alumni =>
-  alumni.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  alumni.department?.toLowerCase().includes(searchTerm.toLowerCase())
-)
-.sort((a, b) => {
-  const valA = a[sortBy];
-  const valB = b[sortBy];
+  const filteredAlumni = alumniList
+    .filter(alumni =>
+      alumni.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      alumni.department?.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => {
+      const valA = a[sortBy];
+      const valB = b[sortBy];
 
-  if (sortBy === "passOutYear") {
-    return (parseInt(valA) || 0) - (parseInt(valB) || 0); // numeric comparison
-  } else {
-    return (valA || "").toString().localeCompare((valB || "").toString()); // string comparison
-  }
-});
+      if (sortBy === "passOutYear") {
+        return (parseInt(valA) || 0) - (parseInt(valB) || 0);
+      } else {
+        return (valA || "").toString().localeCompare((valB || "").toString());
+      }
+    });
 
+  if (isLoading) return <LoadingScreen message="Loading alumni data..." />;
+  if (error) return <div className="text-red-500 p-4 text-center">{error}</div>;
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Header */}
       <header className="bg-indigo-600 text-white py-5 mb-8 relative">
         <Link to="/admin-home">
@@ -116,7 +113,7 @@ const filteredAlumni = alumniList
       </header>
 
       {/* Search and Filter Section */}
-      <div className="max-w-6xl mx-auto px-4">
+      <div className="max-w-6xl mx-auto px-4 flex-grow">
         <div className="py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />

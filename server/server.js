@@ -16,8 +16,9 @@ import alumniMapRoutes from './routes/LandingPage/alumniMap.routes.js';
 import adminRoutes from './routes/Admin/adminRoutes.js';
 import bulkUploadRoute from './routes/Admin/bulkUpload.js';
 import adminDirectory from './routes/Admin/directoryRoutes.js';
+import programRoutes from './routes/Admin/mentorship.js';
 
-// only and only Admin ke routes
+// only and only Alumni ke routes
 import alumniRoutes from './routes/Alumni/alumniRoutes.js';
 
 const app = express();
@@ -51,8 +52,9 @@ app.use('/api/alumni-map', alumniMapRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/admin', bulkUploadRoute);
 app.use('/api/admin', adminDirectory);
+app.use('/api/programs', programRoutes);
 
-// only and only Admin ke routes
+// only and only Alumni ke routes
 app.use('/api/alumni', alumniRoutes);
 
 // Error handling middleware
