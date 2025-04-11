@@ -107,8 +107,8 @@ function App() {
           </button>
         </Link>
         <div className="text-center">
-          <h1 className="text-3xl font-bold">Alumni Directory</h1>
-          <p className="text-indigo-100 text-sm mt-1">Department-wise Alumni Records</p>
+          <h1 className="text-2xl font-bold">Alumni Directory</h1>
+          <p className="text-indigo-100 text-xs mt-1">Department-wise Alumni Records</p>
         </div>
       </header>
 
