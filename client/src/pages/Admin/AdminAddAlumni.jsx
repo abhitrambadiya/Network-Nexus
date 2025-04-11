@@ -14,13 +14,13 @@ const AlumniManagement = () => {
   const [loading, setLoading] = useState(true);
   
   // Clear upload status after 5 seconds if it's an error
-    useEffect(() => {
+  useEffect(() => {
     // Simulate initial loading like other pages
     const start = Date.now();
 
     const timer = setTimeout(() => {
       setLoading(false);
-    }, Math.max(0, 1000 - (Date.now() - start))); // Ensures at least 2s load time
+    }, Math.max(0, 1000 - (Date.now() - start))); // Ensures at least 1s load time
 
     return () => clearTimeout(timer);
   }, []);
@@ -152,27 +152,30 @@ const AlumniManagement = () => {
       fullName: e.target.fullName.value,
       email: e.target.email.value,
       password: e.target.password.value,
-      phone: e.target.phone.value,
+      phoneNumber: e.target.phoneNumber.value,
       department: e.target.department.value,
       passOutYear: e.target.passOutYear.value,
       position: e.target.position.value,
-      company: e.target.company.value,
+      companyName: e.target.companyName.value,
       location: e.target.location.value,
-      jobDescription: e.target.jobDescription.value
+      linkedInURL: e.target.linkedinURL.value,
+      skills: e.target.skills.value,
+      successStory: e.target.successStory.value,
+      specialAchievements: e.target.specialAchievements.value
     };
     
     try {
-      // Send the data to the server
-      const response = await axios.post('/api/alumni/add', formData);
+      // Send the data to the server - using the correct endpoint from your backend
+      const response = await axios.post('http://localhost:5001/api/addAlumni/add', formData);
       
       // Clear form
       e.target.reset();
       
       // Show success message
-      alert('Alumni added successfully!');
+      showUploadStatus('Alumni added successfully!', 'success');
     } catch (error) {
       console.error('Error adding alumni:', error);
-      alert(`Failed to add alumni: ${error.response?.data?.message || 'Server error'}`);
+      showUploadStatus(`Failed to add alumni: ${error.response?.data?.message || 'Server error'}`, 'error');
     } finally {
       setIsSubmitting(false);
     }
@@ -364,11 +367,11 @@ const AlumniManagement = () => {
                   </div>
                   
                   <div className="mb-4">
-                    <label className="block mb-2 text-gray-700 font-medium" htmlFor="phone">Phone</label>
+                    <label className="block mb-2 text-gray-700 font-medium" htmlFor="phoneNumber">Phone</label>
                     <input 
                       type="tel" 
-                      id="phone" 
-                      name="phone" 
+                      id="phoneNumber" 
+                      name="phoneNumber" 
                       className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100" 
                       required 
                     />
@@ -383,11 +386,11 @@ const AlumniManagement = () => {
                       required
                     >
                       <option value="">Select Department</option>
-                      <option value="Computer Science">Computer Science</option>
-                      <option value="Information Technology">Information Technology</option>
-                      <option value="Electrical Engineering">Electrical Engineering</option>
-                      <option value="Mechanical Engineering">Mechanical Engineering</option>
-                      <option value="Civil Engineering">Civil Engineering</option>
+                      <option value="CSE">CSE</option>
+                      <option value="AIML">AIML</option>
+                      <option value="ENTC">ENTC</option>
+                      <option value="MECH">MECH</option>
+                      <option value="CIVIL">CIVIL</option>
                     </select>
                   </div>
                   
@@ -405,7 +408,7 @@ const AlumniManagement = () => {
                   </div>
                   
                   <div className="mb-4">
-                    <label className="block mb-2 text-gray-700 font-medium" htmlFor="position">Current Position</label>
+                    <label className="block mb-2 text-gray-700 font-medium" htmlFor="position">Job Position</label>
                     <input 
                       type="text" 
                       id="position" 
@@ -416,11 +419,11 @@ const AlumniManagement = () => {
                   </div>
                   
                   <div className="mb-4">
-                    <label className="block mb-2 text-gray-700 font-medium" htmlFor="company">Company</label>
+                    <label className="block mb-2 text-gray-700 font-medium" htmlFor="companyName">Company Name</label>
                     <input 
                       type="text" 
-                      id="company" 
-                      name="company" 
+                      id="companyName" 
+                      name="companyName" 
                       className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100" 
                       required 
                     />
@@ -438,12 +441,46 @@ const AlumniManagement = () => {
                     />
                   </div>
                   
+                  {/* LinkedIn URL - New Field */}
+                  <div className="mb-4">
+                    <label className="block mb-2 text-gray-700 font-medium" htmlFor="linkedinURL">LinkedIn URL</label>
+                    <input 
+                      type="url" 
+                      id="linkedinURL" 
+                      name="linkedinURL" 
+                      placeholder="https://linkedin.com/in/username" 
+                      className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100" 
+                    />
+                  </div>
+                  
+                  {/* Skills - New Field */}
+                  <div className="mb-4">
+                    <label className="block mb-2 text-gray-700 font-medium" htmlFor="skills">Skills</label>
+                    <input 
+                      type="text" 
+                      id="skills" 
+                      name="skills" 
+                      placeholder="Java, Python, React, etc." 
+                      className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100" 
+                    />
+                  </div>
+
                   <div className="mb-4 col-span-1 md:col-span-2">
-                    <label className="block mb-2 text-gray-700 font-medium" htmlFor="jobDescription">Job Description</label>
+                    <label className="block mb-2 text-gray-700 font-medium" htmlFor="successStory">Success Story</label>
                     <textarea 
-                      id="jobDescription" 
-                      name="jobDescription" 
-                      className="w-full p-3 border border-gray-300 rounded-md h-32 focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100" 
+                      id="successStory" 
+                      name="successStory" 
+                      className="w-full p-3 border border-gray-300 rounded-md h-22 focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100" 
+                      required
+                    ></textarea>
+                  </div>
+
+                  <div className="mb-4 col-span-1 md:col-span-2">
+                    <label className="block mb-2 text-gray-700 font-medium" htmlFor="specialAchievements">Special Achievements</label>
+                    <textarea 
+                      id="specialAchievements" 
+                      name="specialAchievements" 
+                      className="w-full p-3 border border-gray-300 rounded-md h-22 focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100" 
                       required
                     ></textarea>
                   </div>

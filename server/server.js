@@ -17,6 +17,7 @@ import adminRoutes from './routes/Admin/adminRoutes.js';
 import bulkUploadRoute from './routes/Admin/bulkUpload.js';
 import adminDirectory from './routes/Admin/directoryRoutes.js';
 import programRoutes from './routes/Admin/mentorship.js';
+import addSingleAlumni from './routes/Admin/addAlumni.js';
 
 // only and only Alumni ke routes
 import alumniRoutes from './routes/Alumni/alumniRoutes.js';
@@ -53,6 +54,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/admin', bulkUploadRoute);
 app.use('/api/admin', adminDirectory);
 app.use('/api/programs', programRoutes);
+app.use('/api/addAlumni', addSingleAlumni);
 
 // only and only Alumni ke routes
 app.use('/api/alumni', alumniRoutes);

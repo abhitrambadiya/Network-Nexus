@@ -47,7 +47,7 @@ function App() {
           company: alumni.companyName || "Not specified",
           skills: processSkills(alumni.skills),
           achievements: processAchievements(alumni.specialAchievements),
-          linkedinUrl: alumni.linkedInURL || "#",
+          linkedInURL: alumni.linkedInURL || "#",
           phone: alumni.phoneNumber || "N/A"
         }));
         setAlumniList(alumniWithAvatars);
@@ -113,7 +113,7 @@ function App() {
       </header>
 
       {/* Search and Filter Section */}
-      <div className="max-w-6xl mx-auto px-4 flex-grow">
+      <div className="max-w-8xl mx-auto px-4 flex-grow">
         <div className="py-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
@@ -265,8 +265,8 @@ function App() {
                     <div>
                       <dt className="text-sm font-medium text-gray-500">LinkedIn</dt>
                       <dd className="text-sm text-gray-900">
-                        <a href={selectedAlumni.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">
-                          {selectedAlumni.linkedinUrl}
+                        <a href={selectedAlumni.linkedInURL} target="_blank" rel="noopener noreferrer" className="text-indigo-600 hover:underline">
+                          {selectedAlumni.linkedInURL}
                         </a>
                       </dd>
                     </div>
