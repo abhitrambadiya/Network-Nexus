@@ -5,15 +5,20 @@ import axios from 'axios';
 import LoadingScreen from "../../components/LoadingScreen";
 
 const AlumniManagement = () => {
-  const [uploadStatus, setUploadStatus] = useState({ message: '', type: '' });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  // Separate status states for each form
+  const [bulkUploadStatus, setBulkUploadStatus] = useState({ message: '', type: '' });
+  const [singleAddStatus, setSingleAddStatus] = useState({ message: '', type: '' });
+  
+  // Separate loading states for each form
+  const [isBulkSubmitting, setIsBulkSubmitting] = useState(false);
+  const [isSingleSubmitting, setIsSingleSubmitting] = useState(false);
+  
   const [selectedFile, setSelectedFile] = useState(null);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef(null);
   const currentYear = new Date().getFullYear();
   const [loading, setLoading] = useState(true);
   
-  // Clear upload status after 5 seconds if it's an error
   useEffect(() => {
     // Simulate initial loading like other pages
     const start = Date.now();
@@ -25,7 +30,6 @@ const AlumniManagement = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  
   // Drag and drop handlers
   const preventDefaults = (e) => {
     e.preventDefault();
@@ -63,22 +67,27 @@ const AlumniManagement = () => {
       
       if (validExtensions.includes(fileExtension) || file.type === 'text/csv' || file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
         setSelectedFile(file);
-        showUploadStatus('File selected: ' + file.name, 'success');
+        showBulkUploadStatus('File selected: ' + file.name, 'success');
       } else {
         setSelectedFile(null);
-        showUploadStatus('Please upload a CSV or Excel file', 'error');
+        showBulkUploadStatus('Please upload a CSV or Excel file', 'error');
       }
     }
   };
   
-  const showUploadStatus = (message, type) => {
-    setUploadStatus({ message, type });
+  // Separate status handlers for each form
+  const showBulkUploadStatus = (message, type) => {
+    setBulkUploadStatus({ message, type });
+  };
+  
+  const showSingleAddStatus = (message, type) => {
+    setSingleAddStatus({ message, type });
   };
   
   const handleRemoveFile = (e) => {
     e.stopPropagation(); // Prevent triggering the parent onClick
     setSelectedFile(null);
-    setUploadStatus({ message: '', type: '' });
+    setBulkUploadStatus({ message: '', type: '' });
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -86,7 +95,7 @@ const AlumniManagement = () => {
   
   const handleTemplateDownload = async () => {
     try {
-      setIsSubmitting(true);
+      setIsBulkSubmitting(true);
       // Request the template file from the server
       const response = await axios.get('/api/alumni/template', {
         responseType: 'blob', // Important for file downloads
@@ -101,22 +110,22 @@ const AlumniManagement = () => {
       link.click();
       link.remove();
       window.URL.revokeObjectURL(url);
-      showUploadStatus('Template downloaded successfully', 'success');
+      showBulkUploadStatus('Template downloaded successfully', 'success');
     } catch (error) {
       console.error('Error downloading template:', error);
-      showUploadStatus('Failed to download template', 'error');
+      showBulkUploadStatus('Failed to download template', 'error');
     } finally {
-      setIsSubmitting(false);
+      setIsBulkSubmitting(false);
     }
   };
   
   const handleBulkUploadSubmit = async () => {
     if (!selectedFile) {
-      showUploadStatus('Please select a file first', 'error');
+      showBulkUploadStatus('Please select a file first', 'error');
       return;
     }
     
-    setIsSubmitting(true);
+    setIsBulkSubmitting(true);
     
     try {
       const formData = new FormData();
@@ -129,22 +138,22 @@ const AlumniManagement = () => {
       });
       
       const { summary } = response.data;
-      showUploadStatus(`Upload complete! Added: ${summary.successCount}, Skipped: ${summary.skipCount}, Failed: ${summary.errorCount}`, 'success');
+      showBulkUploadStatus(`Upload complete! Added: ${summary.successCount}, Skipped: ${summary.skipCount}, Failed: ${summary.errorCount}`, 'success');
       setSelectedFile(null);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
     } catch (error) {
       console.error('Error uploading file:', error);
-      showUploadStatus(`Upload failed: ${error.response?.data?.message || 'Server error'}`, 'error');
+      showBulkUploadStatus(`Upload failed: ${error.response?.data?.message || 'Server error'}`, 'error');
     } finally {
-      setIsSubmitting(false);
+      setIsBulkSubmitting(false);
     }
   };
   
   const handleFormSubmit = async (e) => {
     e.preventDefault();
-    setIsSubmitting(true);
+    setIsSingleSubmitting(true);
     
     // Collect form data
     const formData = {
@@ -172,12 +181,12 @@ const AlumniManagement = () => {
       e.target.reset();
       
       // Show success message
-      showUploadStatus('Alumni added successfully!', 'success');
+      showSingleAddStatus('Alumni added successfully!', 'success');
     } catch (error) {
       console.error('Error adding alumni:', error);
-      showUploadStatus(`Failed to add alumni: ${error.response?.data?.message || 'Server error'}`, 'error');
+      showSingleAddStatus(`Failed to add alumni: ${error.response?.data?.message || 'Server error'}`, 'error');
     } finally {
-      setIsSubmitting(false);
+      setIsSingleSubmitting(false);
     }
   };
 
@@ -227,7 +236,7 @@ const AlumniManagement = () => {
                 className={`border-2 border-dashed rounded-lg p-8 text-center transition-all cursor-pointer
                   ${isDragging ? 'border-indigo-600 bg-indigo-50' : 'border-gray-300'} 
                   ${selectedFile ? 'border-green-500 bg-green-50' : ''}
-                  ${isSubmitting ? 'opacity-75 pointer-events-none' : ''}`}
+                  ${isBulkSubmitting ? 'opacity-75 pointer-events-none' : ''}`}
                 onDragEnter={handleDragEnter}
                 onDragOver={handleDragEnter}
                 onDragLeave={handleDragLeave}
@@ -247,7 +256,7 @@ const AlumniManagement = () => {
                       <button 
                         className="flex items-center gap-2 text-red-600 py-2 px-4 rounded-md border border-red-200 hover:bg-red-50"
                         onClick={handleRemoveFile}
-                        disabled={isSubmitting}
+                        disabled={isBulkSubmitting}
                       >
                         <X size={16} />
                         Remove
@@ -277,21 +286,21 @@ const AlumniManagement = () => {
                 )}
               </div>
               
-              {uploadStatus.message && (
+              {bulkUploadStatus.message && (
                 <div 
-                  id="uploadStatus" 
+                  id="bulkUploadStatus" 
                   className={`mt-4 p-3 rounded-md flex items-center gap-2 ${
-                    uploadStatus.type === 'success' 
+                    bulkUploadStatus.type === 'success' 
                       ? 'bg-green-50 text-green-800 border border-green-400' 
                       : 'bg-red-50 text-red-800 border border-red-400'
                   }`}
                 >
-                  {uploadStatus.type === 'success' ? (
+                  {bulkUploadStatus.type === 'success' ? (
                     <Check size={16} className="text-green-600 flex-shrink-0" />
                   ) : (
                     <X size={16} className="text-red-600 flex-shrink-0" />
                   )}
-                  <span>{uploadStatus.message}</span>
+                  <span>{bulkUploadStatus.message}</span>
                 </div>
               )}
               
@@ -299,19 +308,20 @@ const AlumniManagement = () => {
                 <button 
                   className="py-3 px-3 bg-gray-100 border border-gray-300 hover:bg-gray-200 hover:border-gray-400 rounded-md text-gray-700 transition-colors flex items-center justify-center gap-2"
                   onClick={handleTemplateDownload}
-                  disabled={isSubmitting}
+                  // disabled={isBulkSubmitting}
                 >
-                  {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <FileText size={16} />}
+                  {/* {isBulkSubmitting ? <Loader2 size={16} className="animate-spin" /> : <FileText size={16} />} */}
+                  <FileText size={16} />
                   Download Template
                 </button>
 
                 <button 
                   className="bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-md transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:bg-indigo-600"
                   onClick={handleBulkUploadSubmit}
-                  disabled={!selectedFile || isSubmitting}
+                  disabled={!selectedFile || isBulkSubmitting}
                 >
-                  {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
-                  {isSubmitting ? 'Processing...' : 'Upload File'}
+                  {isBulkSubmitting ? <Loader2 size={16} className="animate-spin" /> : <Upload size={16} />}
+                  {isBulkSubmitting ? 'Processing...' : 'Upload File'}
                 </button>
               </div>
             </div>
@@ -485,14 +495,32 @@ const AlumniManagement = () => {
                     ></textarea>
                   </div>
                 </div>
+
+                {singleAddStatus.message && (
+                <div 
+                  id="singleAddStatus" 
+                  className={`mt-4 p-3 rounded-md flex items-center gap-2 ${
+                    singleAddStatus.type === 'success' 
+                      ? 'bg-green-50 text-green-800 border border-green-400' 
+                      : 'bg-red-50 text-red-800 border border-red-400'
+                  }`}
+                >
+                  {singleAddStatus.type === 'success' ? (
+                    <Check size={16} className="text-green-600 flex-shrink-0" />
+                  ) : (
+                    <X size={16} className="text-red-600 flex-shrink-0" />
+                  )}
+                  <span>{singleAddStatus.message}</span>
+                </div>
+              )}
                 
                 <button 
                   type="submit" 
                   className="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-3 rounded-md mt-4 transition-colors flex items-center justify-center gap-2 disabled:opacity-60"
-                  disabled={isSubmitting}
+                  disabled={isSingleSubmitting}
                 >
-                  {isSubmitting ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
-                  {isSubmitting ? 'Processing...' : 'Submit'}
+                  {isSingleSubmitting ? <Loader2 size={16} className="animate-spin" /> : <Check size={16} />}
+                  {isSingleSubmitting ? 'Processing...' : 'Submit'}
                 </button>
               </form>
             </div>

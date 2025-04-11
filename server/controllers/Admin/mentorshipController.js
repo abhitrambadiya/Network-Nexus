@@ -73,3 +73,28 @@ export const markProgramComplete = async (req, res) => {
     });
   }
 };
+
+// Delete a program
+export const deleteProgram = async (req, res) => {
+  try {
+    const program = await Mentorship.findByIdAndDelete(req.params.id);
+
+    if (!program) {
+      return res.status(404).json({
+        success: false,
+        error: 'Program not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Program deleted successfully'
+    });
+  } catch (error) {
+    console.error('Delete error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Server Error'
+    });
+  }
+};

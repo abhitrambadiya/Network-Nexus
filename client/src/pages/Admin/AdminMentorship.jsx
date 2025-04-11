@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { Bell, MapPin, User, Briefcase, Home, Check, History, CheckCircle2 } from 'lucide-react';
+import { Bell, MapPin, User, Briefcase, Home, Check, History, CheckCircle2, Trash2, AlertTriangle } from 'lucide-react';
 import LoadingScreen from "../../components/LoadingScreen";
 
 // Set base URL for API requests
 const API_URL = 'http://localhost:5001/api';
 
-function ProgramCard({ program, isSelected, onClick, onApprove, onComplete }) {
+function ProgramCard({ program, isSelected, onClick, onApprove, onComplete, onDelete }) {
   return (
     <div 
       className={`bg-white rounded-lg p-6 shadow transition-all duration-200 cursor-pointer hover:translate-y-[-2px] hover:shadow-md relative ${
@@ -15,22 +15,39 @@ function ProgramCard({ program, isSelected, onClick, onApprove, onComplete }) {
       }`}
       onClick={onClick}
     >
-      <span className="inline-flex items-center gap-1 bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm mb-4">
-        {program.type === 'Technical' ? <Briefcase size={16} /> : <User size={16} />}
-        {program.type}
-      </span>
+      {/* Status badge */}
+      <div className="flex justify-between items-center mb-4">
+        <span className="inline-flex items-center gap-1 bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
+          {program.type === 'Technical' ? <Briefcase size={16} /> : <User size={16} />}
+          {program.type}
+        </span>
+        
+        {/* Delete button - always visible but doesn't stop propagation */}
+        <button 
+          className="p-2 text-gray-400 hover:text-red-500 hover:bg-gray-100 rounded-full transition-colors"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(program._id);
+          }}
+          aria-label="Delete mentorship"
+        >
+          <Trash2 size={18} />
+        </button>
+      </div>
+      
       <h3 className="text-gray-900 text-xl font-medium mb-3">{program.title}</h3>
-      <p className="text-gray-600 mb-4">{program.description}</p>
-      <p className="flex items-center gap-1 text-gray-500 text-sm mb-4">
+      <p className="text-gray-600 mb-4 line-clamp-2">{program.description}</p>
+      
+      <div className="flex items-center gap-1 text-gray-500 text-sm mb-4">
         <MapPin size={16} />
         {program.location}
-      </p>
-      <div className="pt-4 border-t border-gray-200 text-gray-500 text-sm mb-4">
-        Contact: {program.contact}
       </div>
-      <div className="pt-0 text-gray-500 text-sm mb-4">
-        PRN: {program.prn}
+      
+      <div className="space-y-2 pt-4 border-t border-gray-200">
+        <p className="text-gray-500 text-sm">Contact: {program.contact}</p>
+        <p className="text-gray-500 text-sm">PRN: {program.prn}</p>
       </div>
+      
       {isSelected && !program.isApproved && !program.isMarkedAsComplete && (
         <div className="mt-4">
           <button 
@@ -40,25 +57,28 @@ function ProgramCard({ program, isSelected, onClick, onApprove, onComplete }) {
               onApprove(program._id);
             }}
           >
-            <Check size={20} />
+            <Check size={18} />
             Approve
           </button>
         </div>
       )}
+      
       {program.isApproved && !program.isMarkedAsComplete && (
         <button 
-          className="w-full flex items-center justify-center gap-2 py-3 bg-gray-100 text-gray-700 rounded-md font-medium hover:bg-gray-200 transition-colors duration-200 mt-4"
+          className="w-full flex items-center justify-center gap-2 py-3 bg-emerald-600 text-white rounded-md font-medium hover:bg-emerald-700 transition-colors duration-200 mt-4"
           onClick={(e) => {
             e.stopPropagation();
             onComplete(program._id);
           }}
         >
-          <CheckCircle2 size={20} />
+          <CheckCircle2 size={18} />
           Mark as Completed
         </button>
       )}
+      
       {program.isMarkedAsComplete && (
-        <div className="mt-4 text-center py-2 bg-green-100 text-green-700 rounded-md">
+        <div className="mt-4 text-center py-2 bg-green-100 text-green-700 rounded-md flex items-center justify-center gap-2">
+          <CheckCircle2 size={18} />
           Completed
         </div>
       )}
@@ -82,7 +102,8 @@ ProgramCard.propTypes = {
   isSelected: PropTypes.bool.isRequired,
   onClick: PropTypes.func.isRequired,
   onApprove: PropTypes.func.isRequired,
-  onComplete: PropTypes.func.isRequired
+  onComplete: PropTypes.func.isRequired,
+  onDelete: PropTypes.func.isRequired
 };
 
 function App() {
@@ -91,36 +112,31 @@ function App() {
   const [selectedProgram, setSelectedProgram] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [programToDelete, setProgramToDelete] = useState(null);
 
   useEffect(() => {
-    const fetchPrograms = async () => {
-      const start = Date.now();
-      setLoading(true);
-
-      try {
-        const response = await axios.get(`${API_URL}/programs`);
-        const elapsed = Date.now() - start;
-        const delay = Math.max(0, 1000 - elapsed);
-
-        setTimeout(() => {
-          setPrograms(response.data.data);
-          setLoading(false);
-        }, delay);
-      } catch (err) {
-        const elapsed = Date.now() - start;
-        const delay = Math.max(0, 1000 - elapsed);
-
-        setTimeout(() => {
-          setError('Failed to fetch programs');
-          setLoading(false);
-        }, delay);
-
-        console.error('Error fetching programs:', err);
-      }
-    };
-
-    fetchPrograms();
+    // Introduce a mandatory 2-second delay before loading content
+    const timer = setTimeout(() => {
+      fetchPrograms();
+    }, 1000);
+  
+    return () => clearTimeout(timer);
   }, []);
+  
+
+  const fetchPrograms = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/programs`);
+      setPrograms(response.data.data);
+      setLoading(false);
+    } catch (err) {
+      setError('Failed to fetch programs');
+      setLoading(false);
+      console.error('Error fetching programs:', err);
+    }
+  };
+  
 
   const pendingPrograms = programs.filter(p => !p.isApproved && !p.isMarkedAsComplete);
   const approvedPrograms = programs.filter(p => p.isApproved && !p.isMarkedAsComplete);
@@ -152,6 +168,29 @@ function App() {
     }
   };
 
+  const handleDeleteClick = (id) => {
+    setProgramToDelete(id);
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    try {
+      await axios.delete(`${API_URL}/programs/${programToDelete}`);
+      setPrograms(programs.filter(p => p._id !== programToDelete));
+      setShowDeleteConfirm(false);
+      setProgramToDelete(null);
+      setSelectedProgram(null);
+    } catch (err) {
+      console.error('Error deleting program:', err);
+      alert('Failed to delete program');
+    }
+  };
+
+  const handleDeleteCancel = () => {
+    setShowDeleteConfirm(false);
+    setProgramToDelete(null);
+  };
+
   if (loading) return <LoadingScreen message="Loading mentorships..." />;
 
   if (error) {
@@ -172,9 +211,10 @@ function App() {
 
   return (
     <div className="min-h-screen flex flex-col justify-between bg-gray-50 text-gray-800">
+      {/* Header */}
       <header className="bg-indigo-600 text-white py-6 mb-8 relative">
         <button 
-          className="absolute left-8 top-1/2 transform -translate-y-1/2 bg-transparent border border-white text-white py-2 px-4 rounded-md flex items-center gap-2 hover:bg-white/10 transition-all duration-200"
+          className="absolute left-12 top-1/2 transform -translate-y-1/2 bg-transparent border border-white text-white py-2 px-4 rounded-md flex items-center gap-2 hover:bg-white/10 transition-all duration-200"
           onClick={() => window.location.href = '/admin-home'}
         >
           <Home size={16} />
@@ -183,48 +223,51 @@ function App() {
         <h1 className="text-center text-2xl font-bold">Mentorship Approval Dashboard</h1>
       </header>
 
-      <div className="max-w-7xl mx-auto px-8 w-full">
-        <div className="flex gap-4 mb-8 border-b-2 border-gray-200 pb-4 md:flex-row flex-col">
+      <div className="max-w-7xl mx-auto px-4 w-full mb-16">
+        {/* Tabs */}
+        <div className="flex gap-2 mb-8 bg-white rounded-lg shadow p-2 md:flex-row flex-col">
           <button 
-            className={`flex items-center gap-2 py-3 px-6 rounded-lg font-medium transition-all duration-200
+            className={`flex items-center gap-2 py-3 px-6 rounded-lg font-medium transition-all duration-200 flex-1
               ${activeTab === 'pending' 
-                ? 'text-indigo-600 bg-gray-100' 
-                : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-100'}`}
+                ? 'text-white bg-indigo-600 shadow-md' 
+                : 'text-gray-600 hover:bg-gray-100'}`}
             onClick={() => setActiveTab('pending')}
           >
-            <Bell size={16} />
-            Pending Requests ({pendingPrograms.length})
+            <Bell size={18} />
+            Pending ({pendingPrograms.length})
           </button>
           <button 
-            className={`flex items-center gap-2 py-3 px-6 rounded-lg font-medium transition-all duration-200
+            className={`flex items-center gap-2 py-3 px-6 rounded-lg font-medium transition-all duration-200 flex-1
               ${activeTab === 'approved' 
-                ? 'text-indigo-600 bg-gray-100' 
-                : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-100'}`}
+                ? 'text-white bg-indigo-600 shadow-md' 
+                : 'text-gray-600 hover:bg-gray-100'}`}
             onClick={() => setActiveTab('approved')}
           >
-            <History size={16} />
-            Approved Requests ({approvedPrograms.length})
+            <History size={18} />
+            Approved ({approvedPrograms.length})
           </button>
           <button 
-            className={`flex items-center gap-2 py-3 px-6 rounded-lg font-medium transition-all duration-200
+            className={`flex items-center gap-2 py-3 px-6 rounded-lg font-medium transition-all duration-200 flex-1
               ${activeTab === 'completed' 
-                ? 'text-indigo-600 bg-gray-100' 
-                : 'text-gray-500 hover:text-indigo-600 hover:bg-gray-100'}`}
+                ? 'text-white bg-indigo-600 shadow-md' 
+                : 'text-gray-600 hover:bg-gray-100'}`}
             onClick={() => setActiveTab('completed')}
           >
-            <CheckCircle2 size={16} />
+            <CheckCircle2 size={18} />
             Completed ({completedPrograms.length})
           </button>
         </div>
 
+        {/* Notification banner
         {activeTab === 'pending' && pendingPrograms.length > 0 && (
-          <div className="bg-indigo-700 text-white p-4 mb-8 rounded-lg flex items-center gap-2">
-            <Bell size={20} />
-            <span>You have {pendingPrograms.length} new requests pending approval</span>
+          <div className="bg-gradient-to-r from-indigo-600 to-indigo-500 text-white p-4 mb-8 rounded-lg flex items-center gap-3 shadow-md">
+            <Bell size={20} className="animate-pulse" />
+            <span className="font-medium">You have {pendingPrograms.length} new request{pendingPrograms.length !== 1 ? 's' : ''} pending approval</span>
           </div>
-        )}
+        )} */}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10 mb-10">
+        {/* Program cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-10">
           {activeTab === 'pending' && pendingPrograms.map(program => (
             <ProgramCard
               key={program._id}
@@ -233,6 +276,7 @@ function App() {
               onClick={() => handleCardClick(program._id)}
               onApprove={handleApprove}
               onComplete={handleComplete}
+              onDelete={() => handleDeleteClick(program._id)}
             />
           ))}
           {activeTab === 'approved' && approvedPrograms.map(program => (
@@ -243,6 +287,7 @@ function App() {
               onClick={() => handleCardClick(program._id)}
               onApprove={handleApprove}
               onComplete={handleComplete}
+              onDelete={() => handleDeleteClick(program._id)}
             />
           ))}
           {activeTab === 'completed' && completedPrograms.map(program => (
@@ -253,21 +298,57 @@ function App() {
               onClick={() => handleCardClick(program._id)}
               onApprove={handleApprove}
               onComplete={handleComplete}
+              onDelete={() => handleDeleteClick(program._id)}
             />
           ))}
         </div>
 
+        {/* Empty state */}
         {(activeTab === 'pending' && pendingPrograms.length === 0) || 
          (activeTab === 'approved' && approvedPrograms.length === 0) ||
          (activeTab === 'completed' && completedPrograms.length === 0) ? (
-          <div className="text-center py-12 text-gray-500">
-            <h2 className="text-xl font-medium text-gray-700 mb-4">No {activeTab} requests</h2>
-            <p>There are currently no {activeTab} requests to display.</p>
+          <div className="bg-white rounded-lg shadow text-center py-16 text-gray-500">
+            <div className="flex justify-center mb-4">
+              {activeTab === 'pending' && <Bell size={48} className="text-gray-300" />}
+              {activeTab === 'approved' && <History size={48} className="text-gray-300" />}
+              {activeTab === 'completed' && <CheckCircle2 size={48} className="text-gray-300" />}
+            </div>
+            <h2 className="text-xl font-medium text-gray-700 mb-2">No {activeTab} requests</h2>
+            <p>There are currently no {activeTab} mentorship requests to display.</p>
           </div>
         ) : null}
       </div>
 
-      <footer className="bg-gray-800 text-gray-200 py-12">
+      {/* Delete confirmation modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 max-w-md w-full mx-4">
+            <div className="flex items-center gap-3 text-red-600 mb-4">
+              <AlertTriangle size={24} />
+              <h3 className="text-lg font-medium">Confirm Deletion</h3>
+            </div>
+            <p className="text-gray-700 mb-6">Are you sure you want to delete this mentorship program? This action cannot be undone.</p>
+            <div className="flex gap-4 justify-end">
+              <button 
+                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-100 transition-colors"
+                onClick={handleDeleteCancel}
+              >
+                Cancel
+              </button>
+              <button 
+                className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors flex items-center gap-2"
+                onClick={handleDeleteConfirm}
+              >
+                <Trash2 size={16} />
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Footer */}
+      <footer className="bg-gray-800 text-gray-200 py-8">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
@@ -295,8 +376,8 @@ function App() {
             </div>
           </div>
 
-          <div className="text-center pt-8 mt-8 border-t border-gray-700 text-gray-400">
-            ©️ {new Date().getFullYear()} Alumni Association Admin Portal. All rights reserved.
+          <div className="text-center pt-6 mt-6 border-t border-gray-700 text-gray-400">
+            © {new Date().getFullYear()} Alumni Association Admin Portal. All rights reserved.
           </div>
         </div>
       </footer>
