@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import PropTypes from 'prop-types';
 import axios from 'axios';
-import { Bell, MapPin, User, Briefcase, Home, Check, History, CheckCircle2, Trash2, AlertTriangle } from 'lucide-react';
+import { Bell, MapPin, User, Briefcase, Home, Check, History, CheckCircle2, Trash2, AlertTriangle, Calendar, Users, Building } from 'lucide-react';
 import LoadingScreen from "../../components/LoadingScreen";
 
 // Set base URL for API requests
@@ -15,14 +14,8 @@ function ProgramCard({ program, isSelected, onClick, onApprove, onComplete, onDe
       }`}
       onClick={onClick}
     >
-      {/* Status badge */}
+      {/* Delete button */}
       <div className="flex justify-between items-center mb-4">
-        <span className="inline-flex items-center gap-1 bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
-          {program.type === 'Technical' ? <Briefcase size={16} /> : <User size={16} />}
-          {program.type}
-        </span>
-        
-        {/* Delete button - always visible but doesn't stop propagation */}
         <button 
           className="p-2 text-gray-400 hover:text-red-500 hover:bg-gray-100 rounded-full transition-colors"
           onClick={(e) => {
@@ -36,16 +29,39 @@ function ProgramCard({ program, isSelected, onClick, onApprove, onComplete, onDe
       </div>
       
       <h3 className="text-gray-900 text-xl font-medium mb-3">{program.title}</h3>
-      <p className="text-gray-600 mb-4 line-clamp-2">{program.description}</p>
+      <p className="text-gray-600 mb-4 line-clamp-4">{program.description}</p>
       
-      <div className="flex items-center gap-1 text-gray-500 text-sm mb-4">
-        <MapPin size={16} />
-        {program.location}
+      <div className="flex flex-col gap-2 mb-4">
+        <div className="flex items-center gap-1 text-gray-500 text-sm">
+          <User size={16} />
+          {program.fullName}
+        </div>
+        <div className="flex items-center gap-1 text-gray-500 text-sm">
+          <Building size={16} />
+          {program.companyName}
+        </div>
+        <div className="flex items-center gap-1 text-gray-500 text-sm">
+          <Briefcase size={16} />
+          {program.jobPosition}
+        </div>
+        <div className="flex items-center gap-1 text-gray-500 text-sm">
+          <MapPin size={16} />
+          {program.mode}
+        </div>
+        <div className="flex items-center gap-1 text-gray-500 text-sm">
+          <Calendar size={16} />
+          {program.date}
+        </div>
+        <div className="flex items-center gap-1 text-gray-500 text-sm">
+          <Users size={16} />
+          Audience: {program.targetAudience}
+        </div>
       </div>
       
       <div className="space-y-2 pt-4 border-t border-gray-200">
-        <p className="text-gray-500 text-sm">Contact: {program.contact}</p>
-        <p className="text-gray-500 text-sm">PRN: {program.prn}</p>
+        <p className="text-gray-500 text-sm">Department: {program.department || 'Not specified'}</p>
+        <p className="text-gray-500 text-sm">Study Year: {program.studyYear || 'Not specified'}</p>
+        <p className="text-gray-500 text-sm">Participant Limit: {program.limit || 'No limit'}</p>
       </div>
       
       {isSelected && !program.isApproved && !program.isMarkedAsComplete && (
@@ -86,26 +102,6 @@ function ProgramCard({ program, isSelected, onClick, onApprove, onComplete, onDe
   );
 }
 
-ProgramCard.propTypes = {
-  program: PropTypes.shape({
-    _id: PropTypes.string.isRequired,
-    title: PropTypes.string.isRequired,
-    description: PropTypes.string.isRequired,
-    location: PropTypes.string.isRequired,
-    contact: PropTypes.string.isRequired,
-    type: PropTypes.string.isRequired,
-    programType: PropTypes.string.isRequired,
-    prn: PropTypes.string.isRequired,
-    isApproved: PropTypes.bool.isRequired,
-    isMarkedAsComplete: PropTypes.bool.isRequired
-  }).isRequired,
-  isSelected: PropTypes.bool.isRequired,
-  onClick: PropTypes.func.isRequired,
-  onApprove: PropTypes.func.isRequired,
-  onComplete: PropTypes.func.isRequired,
-  onDelete: PropTypes.func.isRequired
-};
-
 function App() {
   const [programs, setPrograms] = useState([]);
   const [activeTab, setActiveTab] = useState('pending');
@@ -116,7 +112,7 @@ function App() {
   const [programToDelete, setProgramToDelete] = useState(null);
 
   useEffect(() => {
-    // Introduce a mandatory 2-second delay before loading content
+    // Introduce a mandatory 1-second delay before loading content
     const timer = setTimeout(() => {
       fetchPrograms();
     }, 1000);
@@ -124,7 +120,6 @@ function App() {
     return () => clearTimeout(timer);
   }, []);
   
-
   const fetchPrograms = async () => {
     try {
       const response = await axios.get(`${API_URL}/programs`);
@@ -137,7 +132,6 @@ function App() {
     }
   };
   
-
   const pendingPrograms = programs.filter(p => !p.isApproved && !p.isMarkedAsComplete);
   const approvedPrograms = programs.filter(p => p.isApproved && !p.isMarkedAsComplete);
   const completedPrograms = programs.filter(p => p.isMarkedAsComplete);
@@ -258,16 +252,8 @@ function App() {
           </button>
         </div>
 
-        {/* Notification banner
-        {activeTab === 'pending' && pendingPrograms.length > 0 && (
-          <div className="bg-gradient-to-r from-indigo-600 to-indigo-500 text-white p-4 mb-8 rounded-lg flex items-center gap-3 shadow-md">
-            <Bell size={20} className="animate-pulse" />
-            <span className="font-medium">You have {pendingPrograms.length} new request{pendingPrograms.length !== 1 ? 's' : ''} pending approval</span>
-          </div>
-        )} */}
-
         {/* Program cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6 mb-10">
           {activeTab === 'pending' && pendingPrograms.map(program => (
             <ProgramCard
               key={program._id}

@@ -34,20 +34,9 @@ function InternshipCard({ internship, isSelected, onClick, onApprove, onComplete
   // Get appropriate mode badge color
   const getModeColor = (mode) => {
     switch (mode) {
-      case 'Remote': return 'blue';
-      case 'Hybrid': return 'amber';
-      case 'On-site': return 'green';
+      case 'Online': return 'blue';
+      case 'Offline': return 'amber';
       default: return 'gray';
-    }
-  };
-
-  // Get appropriate type icon
-  const getTypeIcon = (type) => {
-    switch (type) {
-      case 'Technical': return <Briefcase size={16} />;
-      case 'Design': return <User size={16} />;
-      case 'Business': return <Award size={16} />;
-      default: return <GraduationCap size={16} />;
     }
   };
 
@@ -74,11 +63,6 @@ function InternshipCard({ internship, isSelected, onClick, onApprove, onComplete
       {/* Card header with company and type */}
       <div className="p-5 border-b border-gray-100">
         <div className="flex justify-between items-start mb-3">
-          <Badge color={internship.type === 'Technical' ? 'indigo' : internship.type === 'Design' ? 'green' : 'amber'}>
-            {getTypeIcon(internship.type)}
-            {internship.type}
-          </Badge>
-          
           <Badge color={getModeColor(internship.mode)}>
             {internship.mode}
           </Badge>
@@ -131,10 +115,6 @@ function InternshipCard({ internship, isSelected, onClick, onApprove, onComplete
           {internship.requiredSkills.map((skill, idx) => (
             <span key={idx} className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs font-medium">{skill}</span>
           ))}
-        </div>
-        
-        <div className="pt-4 border-t border-gray-100 text-gray-600 text-sm">
-          <span className="font-medium">Contact:</span> {internship.contact}
         </div>
       </div>
       
@@ -210,8 +190,6 @@ InternshipCard.propTypes = {
     company: PropTypes.string.isRequired,
     description: PropTypes.string.isRequired,
     location: PropTypes.string.isRequired,
-    contact: PropTypes.string.isRequired,
-    type: PropTypes.string.isRequired,
     mode: PropTypes.string.isRequired,
     duration: PropTypes.string.isRequired,
     stipend: PropTypes.string.isRequired,
@@ -354,44 +332,6 @@ function App() {
 
       <main className="flex-1">
         <div className="max-w-7xl mx-auto px-4 py-8">
-          {/* Dashboard stats */}
-          {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-gray-500 text-sm">Total Applications</p>
-                  <h3 className="text-3xl font-bold text-gray-900">{internships.length}</h3>
-                </div>
-                <span className="p-3 bg-blue-100 text-blue-600 rounded-lg">
-                  <Bell size={20} />
-                </span>
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-gray-500 text-sm">Pending Approval</p>
-                  <h3 className="text-3xl font-bold text-gray-900">{pendingInternships.length}</h3>
-                </div>
-                <span className="p-3 bg-amber-100 text-amber-600 rounded-lg">
-                  <Clock size={20} />
-                </span>
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-gray-500 text-sm">Approved</p>
-                  <h3 className="text-3xl font-bold text-gray-900">{approvedInternships.length}</h3>
-                </div>
-                <span className="p-3 bg-green-100 text-green-600 rounded-lg">
-                  <CheckCircle2 size={20} />
-                </span>
-              </div>
-            </div>
-          </div> */}
           
           {/* Filters and search */}
           <div className="bg-white rounded-xl shadow-sm mb-8 border border-gray-100">

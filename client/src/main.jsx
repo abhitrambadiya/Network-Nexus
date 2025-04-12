@@ -3,6 +3,10 @@ import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom
 import ScrollToTop from "./ScrollToTop";
 import { AdminAuthProvider } from './context/AdminAuthContext.jsx';
 import LandingPage from './pages/LandingPage.jsx';
+
+
+
+// Admin Page Routes
 import AdminKaLogin from './pages/Admin/AdminKaLogin.jsx';
 import AdminKaHome from './pages/Admin/AdminKaHome.jsx';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -10,8 +14,13 @@ import AdminDirectory from './pages/Admin/AdminDirectory.jsx';
 import AdminAddAlumni from './pages/Admin/AdminAddAlumni.jsx';
 import AdminInternship from './pages/Admin/AdminInternship.jsx';
 import AdminMentorship from './pages/Admin/AdminMentorship.jsx';
+
+
+
+// Alumni Page Routes
 import AlumniLogin from './pages/Alumni/AlumniLogin.jsx';
 import AlumniKaHome from './pages/Alumni/AlumniKaHome.jsx';
+import AlumniKaMentorship from './pages/Alumni/Mentorship.jsx'
 import AlumniProtectedRoute from './components/alumniProtectedRoute.jsx';
 import './index.css';
 
@@ -35,6 +44,7 @@ createRoot(document.getElementById('root')).render(
       
       {/* Protected Alumni Routes */}
       <Route path="/alumni-home" element={<AlumniProtectedRoute><AlumniKaHome /></AlumniProtectedRoute>} />
+      <Route path="/alumni-mentorship" element={<AlumniProtectedRoute><AlumniKaMentorship /></AlumniProtectedRoute>} />
       
       {/* Admin Routes under AdminAuthProvider context */}
       <Route element={<AdminLayout />}>

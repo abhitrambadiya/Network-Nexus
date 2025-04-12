@@ -1,7 +1,7 @@
-// models/Program.js
 import mongoose from 'mongoose';
 
 const ProgramSchema = new mongoose.Schema({
+  // Core fields needed by admin
   title: {
     type: String,
     required: true
@@ -10,29 +10,33 @@ const ProgramSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  location: {
+  fullName: {
     type: String,
     required: true
   },
-  contact: {
+  companyName: {
     type: String,
     required: true
   },
-  type: {
+  jobPosition: {
     type: String,
-    required: true,
-    enum: ['Technical', 'Career']
+    required: true
+  },
+  mode: {
+    type: String,
+    required: true
+  },
+  date: {
+    type: String,
+    required: true
+  },
+  targetAudience: {
+    type: String,
+    required: true
   },
   programType: {
     type: String,
-    required: true,
-    enum: ['mentorship', 'internship']
-  },
-  image: {
-    type: String
-  },
-  prn: {
-    type: String,
+    enum: ['mentorship', 'internship'],
     required: true
   },
   isApproved: {
@@ -42,6 +46,14 @@ const ProgramSchema = new mongoose.Schema({
   isMarkedAsComplete: {
     type: Boolean,
     default: false
+  },
+  // Other fields can remain but aren't primary focus for admin
+  studyYear: String,
+  department: String,
+  limit: String,
+  participants: {
+    type: Array,
+    default: []
   },
   createdAt: {
     type: Date,

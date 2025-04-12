@@ -2,46 +2,63 @@ import { MongoClient } from 'mongodb';
 
 const mentorshipPrograms = [
   {
+    fullName: "Abhi Trambadiya",
+    jobPosition: "Backend Devloper",
+    companyName: "Google",
     title: "Tech Leadership 101",
     description: "A mentorship program for aspiring tech leads focusing on leadership, communication, and technical guidance.",
-    location: "online",
-    image: "https://cdn.example.com/images/tech-leadership.jpg",
-    prn: "2324000344",
-    contact: "john.doe@example.com", // dummy contact, can be PRN-linked
-    type: "Career",
+    mode: "online",
     programType: "mentorship",
+    targetAudience: "AIML students",
+    date: "14th April 2025",
+    studyYear: "SE",
+    department: "AIML",
+    limit: "80",
     isApproved: false,
-    isMarkedAsComplete: false
-  },
-  {
-    title: "Startup Bootcamp",
-    description: "An intensive program to help students launch their own startup ideas with mentorship from real founders.",
-    location: "offline",
-    image: "https://cdn.example.com/images/startup-bootcamp.jpg",
-    prn: "2324006969",
-    contact: "jane.smith@example.com",
-    type: "Technical",
-    programType: "mentorship",
-    isApproved: false,
-    isMarkedAsComplete: false
-  },
-  {
-    title: "AI Research Mentorship",
-    description: "One-on-one mentorships with professors and researchers in AI & ML.",
-    location: "online",
-    image: "https://cdn.example.com/images/ai-research.jpg",
-    prn: "2324000877",
-    contact: "alan.turing@example.edu",
-    type: "Technical",
-    programType: "mentorship",
-    isApproved: false,
-    isMarkedAsComplete: false
+    isMarkedAsComplete: false,
+    participants: [
+      {
+        fullName: "Shiv Pardeshi",
+        PRN: "2324000413",
+        department: "AIML",
+        studyYear: "SE",
+        phoneNumber: "9782435617"
+      },
+      {
+        fullName: "Aarav Mehta",
+        PRN: "2324000421",
+        department: "AIML",
+        studyYear: "SE",
+        phoneNumber: "9876543210"
+      },
+      {
+        fullName: "Isha Sharma",
+        PRN: "2324000432",
+        department: "AIML",
+        studyYear: "SE",
+        phoneNumber: "9123456789"
+      },
+      {
+        fullName: "Rohan Kulkarni",
+        PRN: "2324000445",
+        department: "AIML",
+        studyYear: "SE",
+        phoneNumber: "9988776655"
+      },
+      {
+        fullName: "Tanvi Deshpande",
+        PRN: "2324000456",
+        department: "AIML",
+        studyYear: "SE",
+        phoneNumber: "9090909090"
+      }
+    ]
   }
 ];
 
 // MongoDB connection setup
 const uri = 'mongodb+srv://networknexusMERN:WGKonEqRljv3RlIs@networknexus.wnx9c9d.mongodb.net/alumniNetwork?retryWrites=true&w=majority&appName=NetworkNexus';
-const dbName = 'alumniNetwork'; // Replace this
+const dbName = 'alumniNetwork';
 
 async function insertMentorshipPrograms() {
   const client = new MongoClient(uri);

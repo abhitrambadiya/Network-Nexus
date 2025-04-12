@@ -24,10 +24,11 @@ function AlumniKaHome() {
         <div className="max-w-7xl mx-auto px-8 py-4 flex justify-between items-center">
           <a href="/" className="text-2xl font-bold text-indigo-600 no-underline">Alumni Hub</a>
           <div className="flex items-center gap-8">
-            <a href="/qa" className="text-gray-600 font-medium hover:text-indigo-600 transition-colors no-underline">Q&A</a>
-            <a href="/events" className="text-gray-600 font-medium hover:text-indigo-600 transition-colors no-underline">Personalized Events</a>
+            {/* <a href="/qa" className="text-gray-600 font-medium hover:text-indigo-600 transition-colors no-underline">Q&A</a> */}
+            {/* <a href="/events" className="text-gray-600 font-medium hover:text-indigo-600 transition-colors no-underline">Personalized Events</a> */}
             <a href="/resources" className="text-gray-600 font-medium hover:text-indigo-600 transition-colors no-underline">Study Resources</a>
-            <a href="/internship" className="text-gray-600 font-medium hover:text-indigo-600 transition-colors no-underline">Add Internship & Mentorship</a>
+            <a href="/internship" className="text-gray-600 font-medium hover:text-indigo-600 transition-colors no-underline">Add Mentorship</a>
+            <a href="/internship" className="text-gray-600 font-medium hover:text-indigo-600 transition-colors no-underline">Add Internship</a>
             <button onClick={handleLogout} className="text-gray-700 border border-gray-300 px-4 py-1.5 rounded-md ml-4 hover:text-indigo-600 hover:border-indigo-600 hover:bg-gray-50 transition-all no-underline font-medium">
             Logout
           </button>
