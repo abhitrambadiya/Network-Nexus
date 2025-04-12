@@ -113,7 +113,7 @@ function AlumniKaHome() {
               <h1 className="text-2xl font-bold text-gray-900 mb-2">{alumniData.fullName}</h1>
               <p className="text-gray-600 mb-2">{alumniData.email}</p>
               {alumniData.department && <p className="text-gray-600 mb-2">Department of {alumniData.department}</p>}
-              {alumniData.jobPosition && <p className="text-gray-600 mb-2">{alumniData.jobPosition}</p>}
+              {alumniData.jobPosition && alumniData.companyName && <p className="text-gray-600 mb-2">{alumniData.jobPosition} at {alumniData.companyName}</p>}
               {alumniData.passOutYear && <p className="text-gray-600">Class of {alumniData.passOutYear}</p>}
             </div>
           </div>
@@ -141,15 +141,38 @@ function AlumniKaHome() {
         </section>
       </main>
       
-      <footer className="bg-gray-800 text-white py-8 px-8 mt-16">
-        <div className="max-w-7xl mx-auto text-center">
-          <div className="flex justify-center gap-8 mb-4">
-            <a href="/about" className="text-gray-300 hover:text-white transition-colors no-underline">About</a>
-            <a href="/contact" className="text-gray-300 hover:text-white transition-colors no-underline">Contact</a>
-            <a href="/privacy" className="text-gray-300 hover:text-white transition-colors no-underline">Privacy Policy</a>
-            <a href="/terms" className="text-gray-300 hover:text-white transition-colors no-underline">Terms of Service</a>
+      {/* Footer */}
+      <footer className="bg-gray-800 text-gray-200 py-12 mt-16">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div>
+              <h4 className="text-white font-semibold mb-4">Quick Links</h4>
+              <ul className="space-y-2">
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors duration-200 no-underline">Settings</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors duration-200 no-underline">Help Center</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-white font-semibold mb-4">Resources</h4>
+              <ul className="space-y-2">
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors duration-200 no-underline">Guidelines</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors duration-200 no-underline">Support</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-white font-semibold mb-4">Contact</h4>
+              <ul className="space-y-2">
+                <li className="text-gray-400">Email: info@kitcoek.in</li>
+                <li className="text-gray-400">Address: R.S. No. 199B/1-3, Gokul - Shirgoan, Kolhapur - 416 234, Maharashtra</li>
+              </ul>
+            </div>
           </div>
-          <p className="text-gray-400 text-sm">©️ 2024 Alumni Hub. All rights reserved.</p>
+
+          <div className="text-center pt-8 mt-8 border-t border-gray-700 text-gray-400">
+            ©️ {new Date().getFullYear()} Alumni Association Admin Portal. All rights reserved.
+          </div>
         </div>
       </footer>
     </div>

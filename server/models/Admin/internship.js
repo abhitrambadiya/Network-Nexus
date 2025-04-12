@@ -59,7 +59,24 @@ const internshipSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
-  }
+  },
+  alumniId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Alumni',
+      required: true
+    },
+    alumniName: {
+      type: String,
+      required: true
+    },
+    alumniCompany: {
+      type: String,
+      required: true
+    },
+    alumniPosition: {
+      type: String,
+      required: true
+    }
 });
 
 const Internship = mongoose.model('Internship', internshipSchema);

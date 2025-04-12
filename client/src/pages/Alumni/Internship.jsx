@@ -1,23 +1,133 @@
-import React from 'react';
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useAlumniAuth } from '../../context/AlumniAuthContext.jsx';
+import LoadingScreen from "../../components/LoadingScreen.jsx";
+import apiAlumni from './api.js'; // Assuming you have an API service
 
-function App() {
+function AlumniInternshipForm() {
+  const { alumni, logout, loading: authLoading } = useAlumniAuth();
+  const [loading, setLoading] = useState(true);
+  const [alumniData, setAlumniData] = useState(null);
   const navigate = useNavigate();
+  
+  const [formData, setFormData] = useState({
+    title: '',
+    company: '',
+    mode: '',
+    duration: '',
+    stipend: '',
+    limit: '',
+    description: '',
+    prerequisites: '',
+    requiredSkills: '',
+    deadline: ''
+  });
+
+  const avatarColors = ['646cff', 'f97316', '10b981', '3b82f6', 'ef4444', 'a855f7'];
+  
+  const getAvatarUrl = (fullName) => {
+    if (!fullName) return '';
+    return `https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(fullName)}&backgroundColor=${getRandomColor(fullName)}`;
+  };
+  
+  const getRandomColor = (fullName) => {
+    if (!fullName) return avatarColors[0];
+    const index = [...fullName].reduce((acc, char) => acc + char.charCodeAt(0), 0) % avatarColors.length;
+    return avatarColors[index];
+  };
+
+  useEffect(() => {
+    const fetchAlumniProfile = async () => {
+      if (authLoading) return;
+      
+      const start = Date.now();
+      try {
+        const response = await apiAlumni.get('/profile');
+        const elapsed = Date.now() - start;
+        const delay = Math.max(0, 1000 - elapsed);
+
+        setTimeout(() => {
+          setAlumniData(response.data);
+          setLoading(false);
+        }, delay);
+      } catch (error) {
+        const elapsed = Date.now() - start;
+        const delay = Math.max(0, 1000 - elapsed);
+
+        setTimeout(() => {
+          console.error('Failed to fetch alumni profile:', error);
+          navigate('/alumni-login');
+          setLoading(false);
+        }, delay);
+      }
+    };
+
+    if (!authLoading) {
+      fetchAlumniProfile();
+    }
+  }, [navigate, authLoading]);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!alumniData) {
+      console.error('Alumni data not loaded');
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      
+      // Prepare the data to submit
+      const internshipData = {
+        ...formData,
+        deadline: new Date(formData.deadline).toLocaleDateString(),
+        alumniName: alumniData.fullName,
+        alumniCompany: alumniData.companyName,
+        alumniPosition: alumniData.jobPosition,
+        requiredSkills: formData.requiredSkills.split(',').map(skill => skill.trim()),
+        isApproved: false,
+        isMarkAsComplete: false,
+        participants: []
+      };
+      
+      // Submit the internship opportunity
+      const response = await apiAlumni.post('/internships', internshipData);
+      
+      if (response.status === 201) {
+        alert('Internship opportunity posted successfully!');
+        navigate('/alumni-home');
+      }
+    } catch (error) {
+      console.error('Failed to post internship:', error);
+      alert('Failed to post internship opportunity. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogout = async () => {
     try {
-        await axios.post('http://localhost:5001/api/alumni/logout', {}, { withCredentials: true });
-  
-        // Clear localStorage (if token is stored)
-        localStorage.removeItem('alumniToken');
-  
-        // Redirect to login
-        navigate('/alumni-login');
+      await axios.post('http://localhost:5001/api/alumni/logout', {}, { withCredentials: true });
+      localStorage.removeItem('alumniToken');
+      navigate('/alumni-login');
     } catch (error) {
-        console.error('Logout failed:', error);
+      console.error('Logout failed:', error);
     }
-  }; 
+  };
+
+  if (loading) {
+    return <LoadingScreen message="Loading add internships..." />;
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 text-gray-900">
       {/* Navbar */}
@@ -31,8 +141,8 @@ function App() {
             <a href="/alumni-mentorship" className="text-gray-600 font-medium hover:text-indigo-600 transition-colors no-underline">Add Mentorship</a>
             <a href="/alumni-internship" className="text-gray-600 font-medium hover:text-indigo-600 transition-colors no-underline">Add Internship</a>
             <button onClick={handleLogout} className="text-gray-700 border border-gray-300 px-4 py-1.5 rounded-md ml-4 hover:text-indigo-600 hover:border-indigo-600 hover:bg-gray-50 transition-all no-underline font-medium">
-            Logout
-          </button>
+              Logout
+            </button>
           </div>
         </div>
       </nav>
@@ -41,7 +151,7 @@ function App() {
         <section className="bg-white rounded-lg p-8 shadow">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">Add Internship Opportunity</h2>
           
-          <form className="space-y-6">
+          <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Title field */}
               <div>
@@ -50,6 +160,8 @@ function App() {
                   type="text"
                   id="title"
                   name="title"
+                  value={formData.title}
+                  onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="Enter internship title"
                   required
@@ -63,6 +175,8 @@ function App() {
                   type="text"
                   id="company"
                   name="company"
+                  value={formData.company}
+                  onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="Enter company name"
                   required
@@ -75,10 +189,12 @@ function App() {
                 <select
                   id="mode"
                   name="mode"
+                  value={formData.mode}
+                  onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                   required
                 >
-                  <option value="">Select duration</option>
+                  <option value="">Select mode</option>
                   <option value="Online">Online</option>
                   <option value="Offline">Offline</option>
                 </select>
@@ -90,6 +206,8 @@ function App() {
                 <select
                   id="duration"
                   name="duration"
+                  value={formData.duration}
+                  onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                   required
                 >
@@ -108,6 +226,8 @@ function App() {
                   type="text"
                   id="stipend"
                   name="stipend"
+                  value={formData.stipend}
+                  onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="Enter stipend amount"
                   required
@@ -122,6 +242,8 @@ function App() {
                   id="limit"
                   name="limit"
                   min="1"
+                  value={formData.limit}
+                  onChange={handleChange}
                   className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                   placeholder="Enter maximum number of applicants"
                   required
@@ -136,6 +258,8 @@ function App() {
                 id="description"
                 name="description"
                 rows={4}
+                value={formData.description}
+                onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                 placeholder="Enter detailed internship description and responsibilities"
                 required
@@ -149,8 +273,10 @@ function App() {
                 id="prerequisites"
                 name="prerequisites"
                 rows={1}
+                value={formData.prerequisites}
+                onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="E.g. Basics in Figma and Ui design or wireframming knowledge."
+                placeholder="E.g. Basics in Figma and UI design or wireframing knowledge."
                 required
               />
             </div>
@@ -162,8 +288,10 @@ function App() {
                 id="requiredSkills"
                 name="requiredSkills"
                 rows={1}
+                value={formData.requiredSkills}
+                onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
-                placeholder="E.g. Python, C, R, Java, MERN"
+                placeholder="E.g. Python, C, R, Java, MERN (comma separated)"
                 required
               />
             </div>
@@ -175,6 +303,8 @@ function App() {
                 type="date"
                 id="deadline"
                 name="deadline"
+                value={formData.deadline}
+                onChange={handleChange}
                 className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
                 required
               />
@@ -184,48 +314,51 @@ function App() {
               <button
                 type="submit"
                 className="px-6 py-2 bg-indigo-600 text-white font-medium rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                disabled={loading}
               >
-                Post Internship Opportunity
+                {loading ? 'Posting...' : 'Post Internship Opportunity'}
               </button>
             </div>
           </form>
         </section>
       </main>
       
-      <footer className="bg-gray-800 text-white py-8 px-8">
-        <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-12 gap-8">
-          <div className="md:col-span-5">
-            <h3 className="text-lg font-semibold mb-4">AlumniConnect</h3>
-            <p className="text-gray-400">Connecting students & alumni for a stronger community and brighter future.</p>
-          </div>
-          
-          <div className="md:col-span-7 grid grid-cols-2 gap-8 pl-8 md:pl-16">
+      {/* Footer */}
+      <footer className="bg-gray-800 text-gray-200 py-12 mt-16">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              <h4 className="font-medium mb-2">Quick Links</h4>
-              <ul className="text-gray-400 space-y-1">
-                <li><a href="https://www.kitcoek.in" target="_blank" rel="noopener noreferrer" className="hover:text-white">KITCoEK</a></li>
-                <li><a href="https://www.kitirf.com" target="_blank" rel="noopener noreferrer" className="hover:text-white">IRF</a></li>
-                <li>Hall of Fame</li>
-                <li>Privacy Policy</li>
+              <h4 className="text-white font-semibold mb-4">Quick Links</h4>
+              <ul className="space-y-2">
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors duration-200 no-underline">Settings</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors duration-200 no-underline">Help Center</a></li>
               </ul>
             </div>
+
             <div>
-              <h4 className="font-medium mb-2">Resources</h4>
-              <ul className="text-gray-400 space-y-1">
-                <li>Blog</li>
-                <li>Google Drive</li>
-                <li>FAQ</li>
+              <h4 className="text-white font-semibold mb-4">Resources</h4>
+              <ul className="space-y-2">
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors duration-200 no-underline">Guidelines</a></li>
+                <li><a href="#" className="text-gray-400 hover:text-white transition-colors duration-200 no-underline">Support</a></li>
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="text-white font-semibold mb-4">Contact</h4>
+              <ul className="space-y-2">
+                <li className="text-gray-400">Email: info@kitcoek.in</li>
+                <li className="text-gray-400">Address: R.S. No. 199B/1-3, Gokul - Shirgoan, Kolhapur - 416 234, Maharashtra</li>
               </ul>
             </div>
           </div>
-        </div>
-        
-        <div className="max-w-7xl mx-auto pt-8 mt-8 border-t border-gray-700 text-center">
-          <p className="text-gray-400 text-sm">©️ 2025 AlumniConnect. All rights reserved.</p>
+
+          <div className="text-center pt-8 mt-8 border-t border-gray-700 text-gray-400">
+            ©️ {new Date().getFullYear()} Alumni Association Admin Portal. All rights reserved.
+          </div>
         </div>
       </footer>
     </div>
   );
 }
 
-export default App;
+export default AlumniInternshipForm;

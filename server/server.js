@@ -22,6 +22,8 @@ import internshipRoutes from './routes/Admin/internship.js';
 
 // only and only Alumni ke routes
 import alumniRoutes from './routes/Alumni/alumniRoutes.js';
+import alumniInternship from './routes/Alumni/internship.js';
+import alumniMentorship from './routes/Alumni/mentorship.js';
 
 const app = express();
 
@@ -60,6 +62,8 @@ app.use('/api/internships', internshipRoutes);
 
 // only and only Alumni ke routes
 app.use('/api/alumni', alumniRoutes);
+app.use('/api/alumni/internships', alumniInternship);
+app.use('/api/alumni/mentorships', alumniMentorship);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

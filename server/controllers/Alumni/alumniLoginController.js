@@ -162,7 +162,8 @@ export const getAlumniProfile = async (req, res) => {
       email: alumni.email,
       department: alumni.department,
       jobPosition: alumni.jobPosition,
-      passOutYear: alumni.passOutYear
+      passOutYear: alumni.passOutYear,
+      companyName: alumni.companyName
     });
   } catch (error) {
     console.error(error);

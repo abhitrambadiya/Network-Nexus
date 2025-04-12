@@ -107,10 +107,20 @@ function InternshipCard({ internship, isSelected, onClick, onApprove, onComplete
           <p className="text-sm text-gray-600 ml-6">{internship.prerequisites}</p>
         </div>
         
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="flex flex-wrap gap-2 mb-6">
           {internship.requiredSkills.map((skill, idx) => (
             <span key={idx} className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs font-medium">{skill}</span>
           ))}
+        </div>
+        <div className="flex flex-col gap-4 mb-4">
+        <div className="flex items-center gap-1 text-gray-500 text-sm">
+          <User size={16} />
+          {internship.alumniName}
+        </div>
+        <div className="flex items-center gap-1 text-gray-500 text-sm">
+          <Briefcase size={16} />
+          {internship.alumniPosition} at {internship.alumniCompany}
+        </div>
         </div>
       </div>
       

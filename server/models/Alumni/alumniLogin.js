@@ -32,6 +32,10 @@ const alumniSchema = mongoose.Schema(
     type: Number,
     required: true
   },
+  companyName: {
+    type: String,
+    required: true
+  },
     otpToken: String,
     otpExpire: Date,
   },
