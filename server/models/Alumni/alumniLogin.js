@@ -19,6 +19,19 @@ const alumniSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    department: {
+      type: String,
+      required: true,
+      enum: ['AIML', 'CSE', 'ENTC', 'MECH', 'CIVIL']
+    },
+  jobPosition: {
+    type: String,
+    required: true
+  },
+  passOutYear: {
+    type: Number,
+    required: true
+  },
     otpToken: String,
     otpExpire: Date,
   },

@@ -27,7 +27,7 @@ export const loginAlumni = async (req, res) => {
 
     res.status(200).json({
       _id: alumni._id,
-      name: alumni.name,
+      fullName: alumni.fullName,
       email: alumni.email,
       token: generateToken(alumni._id),
     });
@@ -141,6 +141,29 @@ export const resetPassword = async (req, res) => {
     await alumni.save();
 
     res.status(200).json({ message: 'Password reset successful' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+export const getAlumniProfile = async (req, res) => {
+  try {
+    // req.alumni already has the user details from the protect middleware
+    const alumni = req.alumni;
+    
+    if (!alumni) {
+      return res.status(404).json({ message: 'Alumni not found' });
+    }
+
+    res.status(200).json({
+      _id: alumni._id,
+      fullName: alumni.fullName,
+      email: alumni.email,
+      department: alumni.department,
+      jobPosition: alumni.jobPosition,
+      passOutYear: alumni.passOutYear
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Server error' });

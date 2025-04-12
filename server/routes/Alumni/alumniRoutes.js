@@ -4,7 +4,8 @@ import {
   loginAlumni, 
   forgotPassword, 
   verifyOTP, 
-  resetPassword 
+  resetPassword,
+  getAlumniProfile 
 } from '../../controllers/Alumni/alumniLoginController.js';
 import { protect } from '../../middleware/Alumni/alumniMiddleware.js';
 
@@ -14,6 +15,7 @@ const router = express.Router();
 router.post('/login', loginAlumni);
 router.post('/forgot-password', forgotPassword);
 router.post('/verify-otp', verifyOTP);
+router.get('/profile', protect, getAlumniProfile);
 
 // Protected routes
 router.put('/reset-password', protect, resetPassword);
