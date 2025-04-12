@@ -2,6 +2,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import ScrollToTop from "./ScrollToTop";
 import { AdminAuthProvider } from './context/AdminAuthContext.jsx';
+import { AlumniAuthProvider } from './context/AlumniAuthContext.jsx';
 import LandingPage from './pages/LandingPage.jsx';
 
 
@@ -21,6 +22,7 @@ import AdminMentorship from './pages/Admin/AdminMentorship.jsx';
 import AlumniLogin from './pages/Alumni/AlumniLogin.jsx';
 import AlumniKaHome from './pages/Alumni/AlumniKaHome.jsx';
 import AlumniKaMentorship from './pages/Alumni/Mentorship.jsx'
+import AlumniKaInternship from './pages/Alumni/Internship.jsx'
 import AlumniProtectedRoute from './components/alumniProtectedRoute.jsx';
 import './index.css';
 
@@ -33,6 +35,17 @@ const AdminLayout = () => {
   );
 };
 
+
+// Alumni layout with context provider
+const AlumniLayout = () => {
+  return (
+    <AlumniAuthProvider>
+      <Outlet />
+    </AlumniAuthProvider>
+  );
+};
+
+
 createRoot(document.getElementById('root')).render(
   <BrowserRouter>
     <ScrollToTop />
@@ -43,8 +56,11 @@ createRoot(document.getElementById('root')).render(
       <Route path="/alumni-login" element={<AlumniLogin />} />
       
       {/* Protected Alumni Routes */}
+      <Route element={<AlumniLayout />}>
       <Route path="/alumni-home" element={<AlumniProtectedRoute><AlumniKaHome /></AlumniProtectedRoute>} />
       <Route path="/alumni-mentorship" element={<AlumniProtectedRoute><AlumniKaMentorship /></AlumniProtectedRoute>} />
+      <Route path="/alumni-internship" element={<AlumniProtectedRoute><AlumniKaInternship /></AlumniProtectedRoute>} />
+      </Route>
       
       {/* Admin Routes under AdminAuthProvider context */}
       <Route element={<AdminLayout />}>

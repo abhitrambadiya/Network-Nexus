@@ -68,8 +68,8 @@ function InternshipCard({ internship, isSelected, onClick, onApprove, onComplete
           </Badge>
         </div>
         
-        <h3 className="text-xl text-gray-900 font-semibold mb-1">{internship.title}</h3>
-        <p className="text-sm text-gray-600 flex items-center gap-1 mb-2">
+        <h3 className="text-xl text-gray-900 font-semibold mb-2">{internship.title}</h3>
+        <p className="text-sm text-gray-600 flex items-center gap-1 mb-0">
           <Building2 size={16} className="text-gray-500" /> 
           {internship.company}
         </p>
@@ -80,10 +80,6 @@ function InternshipCard({ internship, isSelected, onClick, onApprove, onComplete
         <p className="text-gray-700 text-sm mb-4">{internship.description}</p>
         
         <div className="grid grid-cols-2 gap-4 mb-4">
-          <div className="flex items-start gap-2 text-sm">
-            <MapPin size={16} className="text-gray-500 flex-shrink-0 mt-0.5" />
-            <span className="text-gray-700">{internship.location}</span>
-          </div>
           
           <div className="flex items-start gap-2 text-sm">
             <Clock size={16} className="text-gray-500 flex-shrink-0 mt-0.5" />
@@ -189,7 +185,6 @@ InternshipCard.propTypes = {
     title: PropTypes.string.isRequired,
     company: PropTypes.string.isRequired,
     description: PropTypes.string.isRequired,
-    location: PropTypes.string.isRequired,
     mode: PropTypes.string.isRequired,
     duration: PropTypes.string.isRequired,
     stipend: PropTypes.string.isRequired,

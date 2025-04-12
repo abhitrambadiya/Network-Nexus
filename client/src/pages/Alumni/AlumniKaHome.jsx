@@ -1,54 +1,120 @@
-import React from 'react';
-import { Link } from "react-router-dom";
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from "react-router-dom";
+import apiAlumni from './api.js'; // Adjust path as needed
+import LoadingScreen from "../../components/LoadingScreen.jsx";
+import { useAlumniAuth } from '../../context/AlumniAuthContext.jsx';
 
 function AlumniKaHome() {
+  const avatarColors = ['646cff', 'f97316', '10b981', '3b82f6', 'ef4444', 'a855f7'];
+  
+  const getAvatarUrl = (fullName) => {
+    if (!fullName) return '';
+    // DiceBear API for avatars
+    return `https://api.dicebear.com/6.x/initials/svg?seed=${encodeURIComponent(fullName)}&backgroundColor=${getRandomColor(fullName)}`;
+  };
+  
+  const getRandomColor = (fullName) => {
+    if (!fullName) return avatarColors[0];
+    const index = [...fullName].reduce((acc, char) => acc + char.charCodeAt(0), 0) % avatarColors.length;
+    return avatarColors[index];
+  };
+
+  const { alumni, logout, loading: authLoading } = useAlumniAuth();
+  const [loading, setLoading] = useState(true);
+  const [alumniData, setAlumniData] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchAlumniProfile = async () => {
+      if (authLoading) return;
+      
+      const start = Date.now();
+      try {
+        const response = await apiAlumni.get('/profile');
+        const elapsed = Date.now() - start;
+        const delay = Math.max(0, 1000 - elapsed);
+
+        setTimeout(() => {
+          setAlumniData(response.data);
+          setLoading(false);
+        }, delay);
+      } catch (error) {
+        const elapsed = Date.now() - start;
+        const delay = Math.max(0, 1000 - elapsed);
+
+        setTimeout(() => {
+          console.error('Failed to fetch alumni profile:', error);
+          navigate('/alumni-login');
+          setLoading(false);
+        }, delay);
+      }
+    };
+
+    if (!authLoading) {
+      fetchAlumniProfile();
+    }
+  }, [navigate, authLoading]);
+
   const handleLogout = async () => {
     try {
-        await axios.post('http://localhost:5001/api/alumni/logout', {}, { withCredentials: true });
-
-        // Clear localStorage (if token is stored)
-        localStorage.removeItem('alumniToken');
-
-        // Redirect to login
-        navigate('/alumni-login');
+        await apiAlumni.post('/logout', {}, { withCredentials: true });
+        logout(); // Use the logout function from context
     } catch (error) {
         console.error('Logout failed:', error);
+        // Still attempt to logout locally if server logout fails
+        logout();
     }
-}; 
+  }; 
+
+  if (authLoading || loading) {
+    return <LoadingScreen message="Loading alumni profile..." />;
+  }
+
+  if (!alumniData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-700 text-xl">
+        No alumni data found. Please <button 
+          onClick={() => navigate('/alumni-login')} 
+          className="text-indigo-600 underline"
+        >
+          login again
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-gray-50 text-gray-900">
       <nav className="bg-white shadow fixed w-full top-0 z-50">
         <div className="max-w-7xl mx-auto px-8 py-4 flex justify-between items-center">
-          <a href="/" className="text-2xl font-bold text-indigo-600 no-underline">Alumni Hub</a>
+          <a href="/alumni-home" className="text-2xl font-bold text-indigo-600 no-underline">Alumni Hub</a>
           <div className="flex items-center gap-8">
-            {/* <a href="/qa" className="text-gray-600 font-medium hover:text-indigo-600 transition-colors no-underline">Q&A</a> */}
-            {/* <a href="/events" className="text-gray-600 font-medium hover:text-indigo-600 transition-colors no-underline">Personalized Events</a> */}
-            <a href="/resources" className="text-gray-600 font-medium hover:text-indigo-600 transition-colors no-underline">Study Resources</a>
-            <a href="/internship" className="text-gray-600 font-medium hover:text-indigo-600 transition-colors no-underline">Add Mentorship</a>
-            <a href="/internship" className="text-gray-600 font-medium hover:text-indigo-600 transition-colors no-underline">Add Internship</a>
+            <a href="/qa" className="text-gray-600 font-medium hover:text-indigo-600 transition-colors no-underline">Q&A</a>
+            <a href="/events" className="text-gray-600 font-medium hover:text-indigo-600 transition-colors no-underline">Personalized Events</a>
+            <a href="/alumni-resources" className="text-gray-600 font-medium hover:text-indigo-600 transition-colors no-underline">Study Resources</a>
+            <a href="/alumni-mentorship" className="text-gray-600 font-medium hover:text-indigo-600 transition-colors no-underline">Add Mentorship</a>
+            <a href="/alumni-internship" className="text-gray-600 font-medium hover:text-indigo-600 transition-colors no-underline">Add Internship</a>
             <button onClick={handleLogout} className="text-gray-700 border border-gray-300 px-4 py-1.5 rounded-md ml-4 hover:text-indigo-600 hover:border-indigo-600 hover:bg-gray-50 transition-all no-underline font-medium">
-            Logout
-          </button>
+              Logout
+            </button>
           </div>
         </div>
       </nav>
       
       <main className="max-w-7xl mx-auto mt-24 mb-8 px-8 w-full">
         <section className="bg-white rounded-lg p-8 mb-8 shadow">
-          <div className="flex flex-col md:flex-row items-center md:items-start gap-8 mb-8">
+          <div className="flex flex-col md:flex-row items-center md:items-start gap-8 mb-3">
             <img
-              src= "https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=128&h=128&q=80"
+              src={getAvatarUrl(alumniData.fullName)}
               alt="Profile"
-              className="w-32 h-32 rounded-full object-cover"
+              className="w-32 h-32 rounded-full object-cover bg-gray-100"
             />
             <div>
-              <h1 className="text-2xl font-bold text-gray-900 mb-2">John Doe</h1>
-              <p className="text-gray-600">Class of 2020</p>
-              <p className="text-gray-600">Computer Science</p>
-              <p className="text-gray-600">Software Engineer at Tech Corp</p>
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">{alumniData.fullName}</h1>
+              <p className="text-gray-600 mb-2">{alumniData.email}</p>
+              {alumniData.department && <p className="text-gray-600 mb-2">Department of {alumniData.department}</p>}
+              {alumniData.jobPosition && <p className="text-gray-600 mb-2">{alumniData.jobPosition}</p>}
+              {alumniData.passOutYear && <p className="text-gray-600">Class of {alumniData.passOutYear}</p>}
             </div>
           </div>
         </section>
