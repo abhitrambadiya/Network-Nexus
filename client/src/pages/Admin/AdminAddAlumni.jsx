@@ -170,7 +170,8 @@ const AlumniManagement = () => {
       linkedInURL: e.target.linkedinURL.value,
       skills: e.target.skills.value,
       successStory: e.target.successStory.value,
-      specialAchievements: e.target.specialAchievements.value
+      specialAchievements: e.target.specialAchievements.value,
+      hallOfFame: e.target.hallOfFame.value
     };
     
     try {
@@ -332,6 +333,18 @@ const AlumniManagement = () => {
               
               <form id="singleAlumniForm" onSubmit={handleFormSubmit}>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                  <div className="mb-4 col-span-1 md:col-span-2">
+                    <label className="block mb-2 text-gray-700 font-medium" htmlFor="fullName">Full Name</label>
+                    <textarea 
+                      id="fullName" 
+                      name="fullName" 
+                      rows={1} // Limit to 1 row
+                      className="w-full p-3 border border-gray-300 rounded-md resize-none focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100" 
+                      required
+                    ></textarea>
+                  </div>
+
                   <div className="mb-4">
                     <label className="block mb-2 text-gray-700 font-medium" htmlFor="prn">PRN</label>
                     <input 
@@ -342,16 +355,19 @@ const AlumniManagement = () => {
                       required 
                     />
                   </div>
-                  
+
                   <div className="mb-4">
-                    <label className="block mb-2 text-gray-700 font-medium" htmlFor="fullName">Full Name</label>
-                    <input 
-                      type="text" 
-                      id="fullName" 
-                      name="fullName" 
+                    <label className="block mb-2 text-gray-700 font-medium" htmlFor="hallOfFame">Hall of Fame Status</label>
+                    <select 
+                      id="hallOfFame" 
+                      name="hallOfFame" 
                       className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100" 
-                      required 
-                    />
+                      required
+                    >
+                      <option value="featured">Is featured ?</option>
+                      <option value="notable">Is Notable ?</option>
+                      <option value="">Not on Hall of Fame</option>
+                    </select>
                   </div>
                   
                   <div className="mb-4">
@@ -395,7 +411,6 @@ const AlumniManagement = () => {
                       className="w-full p-3 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-600 focus:ring-2 focus:ring-indigo-100" 
                       required
                     >
-                      <option value="">Select Department</option>
                       <option value="CSE">CSE</option>
                       <option value="AIML">AIML</option>
                       <option value="ENTC">ENTC</option>

@@ -21,6 +21,7 @@ const addSingleAlumni = async (req, res) => {
       successStory,
       specialAchievements,
       linkedInURL,
+      hallOfFame,
       skills,
     } = req.body;
 
@@ -58,6 +59,7 @@ const addSingleAlumni = async (req, res) => {
       successStory: successStory,
       specialAchievements,
       linkedInURL,
+      hallOfFame,
       skills,
       isVerified: true // Admin-added alumni are verified by default
     });

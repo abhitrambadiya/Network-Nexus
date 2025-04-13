@@ -64,6 +64,10 @@ const AlumniSchema = new mongoose.Schema({
   linkedInURL: {
     type: String
   },
+  hallOfFame: {
+    type: String,
+    required: true
+  },
   skills: {
     type: String
   },

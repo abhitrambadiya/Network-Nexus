@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import apiAlumni from './api.js'; // Adjust path as needed
 import LoadingScreen from "../../components/LoadingScreen.jsx";
 import { useAlumniAuth } from '../../context/AlumniAuthContext.jsx';
@@ -89,11 +89,11 @@ function AlumniKaHome() {
         <div className="max-w-7xl mx-auto px-8 py-4 flex justify-between items-center">
           <a href="/alumni-home" className="text-2xl font-bold text-indigo-600 no-underline">Alumni Hub</a>
           <div className="flex items-center gap-8">
-            <a href="/qa" className="text-gray-600 font-medium hover:text-indigo-600 transition-colors no-underline">Q&A</a>
-            <a href="/events" className="text-gray-600 font-medium hover:text-indigo-600 transition-colors no-underline">Personalized Events</a>
-            <a href="/alumni-resources" className="text-gray-600 font-medium hover:text-indigo-600 transition-colors no-underline">Study Resources</a>
-            <a href="/alumni-mentorship" className="text-gray-600 font-medium hover:text-indigo-600 transition-colors no-underline">Add Mentorship</a>
-            <a href="/alumni-internship" className="text-gray-600 font-medium hover:text-indigo-600 transition-colors no-underline">Add Internship</a>
+            <Link to="/alumni-home" className="text-gray-600 font-medium hover:text-indigo-600 transition-colors no-underline">Home</Link>
+            <Link to="/alumni-faq" className="text-gray-600 font-medium hover:text-indigo-600 transition-colors no-underline">Q&A</Link>
+            <Link to="/alumni-studyresources" className="text-gray-600 font-medium hover:text-indigo-600 transition-colors no-underline">Study Resources</Link>
+            <Link to="/alumni-mentorship" className="text-gray-600 font-medium hover:text-indigo-600 transition-colors no-underline">Add Mentorship</Link>
+            <Link to="/alumni-internship" className="text-gray-600 font-medium hover:text-indigo-600 transition-colors no-underline">Add Internsip</Link>
             <button onClick={handleLogout} className="text-gray-700 border border-gray-300 px-4 py-1.5 rounded-md ml-4 hover:text-indigo-600 hover:border-indigo-600 hover:bg-gray-50 transition-all no-underline font-medium">
               Logout
             </button>
@@ -136,6 +136,53 @@ function AlumniKaHome() {
             <div className="bg-gray-50 p-6 rounded-lg border border-gray-200">
               <h3 className="text-lg font-bold text-gray-900 mb-2">Funding Opportunities</h3>
               <p className="text-gray-600 text-sm">Connect with potential investors and explore various funding options to fuel your startup's growth.</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-white rounded-lg p-8 shadow mt-10">
+          <h2 className="text-2xl font-bold text-gray-900 mb-">What's New in KITCoEK</h2>
+          <div className="text-gray-700 mb-3">
+            Discover the latest developments and initiatives at KIT College of Engineering that are transforming the learning experience and fostering innovation.
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
+            {/* AICTE Idea Lab */}
+            <div className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
+              <img 
+                src="https://images.unsplash.com/photo-1593642634524-b40b5baae6bb?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" 
+                alt="AICTE Idea Lab"
+                className="w-full h-48 object-cover"
+              />
+              <div className="p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-2">AICTE Idea Lab</h3>
+                <p className="text-gray-600 text-sm">Our newly established AICTE-approved Idea Lab provides students with cutting-edge facilities to prototype and test their innovative concepts.</p>
+              </div>
+            </div>
+
+            {/* New Digital Library */}
+            <div className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
+              <img 
+                src="https://images.unsplash.com/photo-1589998059171-988d887df646?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" 
+                alt="Digital Library"
+                className="w-full h-48 object-cover"
+              />
+              <div className="p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-2">New Digital Library</h3>
+                <p className="text-gray-600 text-sm">Access thousands of e-books, journals, and research papers through our upgraded digital library platform available 24/7.</p>
+              </div>
+            </div>
+
+            {/* Third Box - Sample */}
+            <div className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
+              <img 
+                src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" 
+                alt="Student Innovation"
+                className="w-full h-48 object-cover"
+              />
+              <div className="p-6">
+                <h3 className="text-lg font-bold text-gray-900 mb-2">Student Innovation Grants</h3>
+                <p className="text-gray-600 text-sm">Apply for our new innovation grants program that provides funding for student-led research projects and startups.</p>
+              </div>
             </div>
           </div>
         </section>

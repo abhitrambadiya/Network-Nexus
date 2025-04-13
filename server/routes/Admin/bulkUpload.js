@@ -6,11 +6,109 @@ import csv from 'csv-parser';
 import bcrypt from 'bcryptjs';
 import axios from 'axios';
 import nodemailer from 'nodemailer';
+import mongoose from 'mongoose';
 
 const router = express.Router();
 
 // Multer setup for file uploads
 const upload = multer({ dest: 'uploads/' });
+
+// MongoDB Connection
+const MONGO_URI = "mongodb+srv://networknexusMERN:WGKonEqRljv3RlIs@networknexus.wnx9c9d.mongodb.net/alumniNetwork?retryWrites=true&w=majority&appName=NetworkNexus";
+mongoose.connect(MONGO_URI)
+    .then(() => console.log('✅ MongoDB Connected'))
+    .catch(err => console.error('❌ MongoDB Connection Error:', err));
+
+// Admin Schema
+const bulkUpload = new mongoose.Schema({
+  prn: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true
+  },
+  fullName: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    lowercase: true
+  },
+  password: {
+    type: String,
+    required: true
+  },
+  phoneNumber: {
+    type: String,
+    required: true
+  },
+  department: {
+    type: String,
+    required: true,
+    enum: ['AIML', 'CSE', 'ENTC', 'MECH', 'CIVIL']
+  },
+  passOutYear: {
+    type: Number,
+    required: true
+  },
+  jobPosition: {
+    type: String,
+    required: true
+  },
+  companyName: {
+    type: String,
+    required: true
+  },
+  location: {
+    type: String,
+    required: true
+  },
+  latitude: {
+    type: Number
+  },
+  longitude: {
+    type: Number
+  },
+  successStory: {
+    type: String
+  },
+  specialAchievements: {
+    type: String
+  },
+  linkedInURL: {
+    type: String
+  },
+  hallOfFame: {
+    type: String,
+    required: true
+  },
+  skills: {
+    type: String
+  },
+  role: {
+    type: String,
+    default: 'Alumni'
+  },
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
+  }
+});
+
+const BulkUpload = mongoose.model('BulkUpload', bulkUpload, "alumnis");
 
 // Email Transporter Setup
 const transporter = nodemailer.createTransport({
@@ -75,7 +173,8 @@ router.post('/bulk-upload', upload.single('csv'), async (req, res) => {
           const processedAlumni = {
             fullName: alumni.fullName,
             email: alumni.email,
-            hashedPassword: await bcrypt.hash(password, 10),
+            phoneNumber: alumni.phoneNumber,
+            password: await bcrypt.hash(password, 10),
             prn: alumni.prn,
             department: alumni.department,
             passOutYear: parseInt(alumni.passOutYear),
@@ -85,10 +184,20 @@ router.post('/bulk-upload', upload.single('csv'), async (req, res) => {
             latitude, 
             longitude,
             successStory: alumni.successStory,
+            specialAchievements: alumni.specialAchievements,
+            linkedInURL: alumni.linkedInURL,
+            hallOfFame: alumni.hallOfFame,
+            role: alumni.role,
+            skills: alumni.skills,
+            isVerified: true,
+            createdAt: new Date(),
+            updatedAt: new Date(),
           };
 
           processedData.push(processedAlumni);
           successCount++;
+          const newAlumni = new BulkUpload(processedAlumni);
+          await newAlumni.save();
 
           // Still send emails to the alumni
           await transporter.sendMail({

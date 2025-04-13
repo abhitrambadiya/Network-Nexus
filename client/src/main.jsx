@@ -23,6 +23,8 @@ import AlumniLogin from './pages/Alumni/AlumniLogin.jsx';
 import AlumniKaHome from './pages/Alumni/AlumniKaHome.jsx';
 import AlumniKaMentorship from './pages/Alumni/Mentorship.jsx'
 import AlumniKaInternship from './pages/Alumni/Internship.jsx'
+import AlumniKaFAQ from './pages/Alumni/FAQ.jsx'
+import AlumniKaResources from './pages/Alumni/StudyResources.jsx'
 import AlumniProtectedRoute from './components/alumniProtectedRoute.jsx';
 import './index.css';
 
@@ -60,6 +62,8 @@ createRoot(document.getElementById('root')).render(
       <Route path="/alumni-home" element={<AlumniProtectedRoute><AlumniKaHome /></AlumniProtectedRoute>} />
       <Route path="/alumni-mentorship" element={<AlumniProtectedRoute><AlumniKaMentorship /></AlumniProtectedRoute>} />
       <Route path="/alumni-internship" element={<AlumniProtectedRoute><AlumniKaInternship /></AlumniProtectedRoute>} />
+      <Route path="/alumni-faq" element={<AlumniProtectedRoute><AlumniKaFAQ /></AlumniProtectedRoute>} />
+      <Route path="/alumni-studyresources" element={<AlumniProtectedRoute><AlumniKaResources /></AlumniProtectedRoute>} />
       </Route>
       
       {/* Admin Routes under AdminAuthProvider context */}
